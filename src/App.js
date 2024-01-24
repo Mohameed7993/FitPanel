@@ -6,8 +6,10 @@ import Contact from './pages/Contact';
 import NoPage from  './pages/NoPage';
 import Blogs from './pages/Blogs';
 import Layout from './pages/Layout'; 
-import Custdetails from './components/formtoreg'; 
+import { Container } from 'react-bootstrap';
+import Signup from './components/Signup';
 import LoginForm from './components/loginform';
+import { AuthProvider } from './context/AuthContext';
 
 
 
@@ -20,7 +22,16 @@ function App() {
          <Route path="blogs" element={<Blogs />} />
          <Route path="about" element={<About />} />
           <Route path="contact" element={<Contact />} />
-          <Route path="New Member" element={< Custdetails/>} />
+          <Route path="New Member" element={
+          <AuthProvider> 
+          <Container className="d-flex align-items-center justify-content-center" style={{minHeight: "550px"}}>
+              <div className="w-100" style={{maxWidth:"400px"}}>
+             < Signup/>
+             </div>
+              </Container>
+                </AuthProvider>
+              } 
+              />
           <Route path="Login" element={< LoginForm/>} />
           <Route path="*" element={<NoPage />} />
         </Route>
