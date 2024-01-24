@@ -1,0 +1,37 @@
+/* about.css */
+
+.about-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h2 {
+    color: #2196F3;
+}
+
+p {
+    line-height: 2;
+    color: #2196F3;
+    font-size: 22px;
+
+}
+
+.media-container {
+    display: flex;
+    flex-direction: column-reverse; /* Change to column to stack images vertically */
+    align-items: last baseline; /* Center images horizontally */
+    margin-top: 20px;
+}
+
+img {
+    max-width: 90%;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+video {
+    max-width: 90%;
+    height: auto;
+    margin-top: 20px;
+}

@@ -1,0 +1,61 @@
+/* Layout.css */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  overflow: scroll;
+  background-color: rgba(0, 0, 0, 0.3); /* Semi-transparent background color */
+}
+
+#myVideo {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  min-width: 100%;
+  min-height: 100%;
+  z-index: -1; /* Ensure video stays in the background */
+}
+
+nav {
+  background-color: transparent;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px 0;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 5px;
+  display: flex;
+  flex-direction: row; /* Align menu items horizontally */
+}
+
+li {
+  margin-left: 40px;
+  margin-top: 25px;
+}
+
+.menu-item {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  padding: 10px;
+  background-color: #2196F3; /* Blue background color */
+  border-radius: 5px; /* Add rounded corners */
+  transition: background-color 0.3s; /* Smooth color transition */
+  display: inline-block; /* Make it a block element */
+}
+
+.menu-item:hover {
+  background-color: white; /* Change to white on hover */
+  color: #2196F3; /* Change text color on hover */
+}
+
+Outlet {
+  padding: 20px;
+}

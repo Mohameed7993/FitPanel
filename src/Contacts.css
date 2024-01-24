@@ -1,0 +1,43 @@
+/* contacts.css */
+
+.contacts-container {
+    padding: 20px;
+  }
+  
+  .contact-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+  
+  .contact-card {
+    width: 400px;
+    padding: 20px;
+    margin: 20px;
+    text-align: center;
+    color: white;
+    border-radius: 8px;
+    background-color: #2196F3;
+    border: 5px solid #ccc;
+  }
+  
+  .contact-card h3 {
+    font-size: 1.5rem;
+  }
+
+
+  
+  .contact-card p {
+    font-size: 1.2rem;
+    margin-top: 10px;
+    color: white;
+  }
+
+  .contact-card:hover{
+        background-color: #fff;
+        color:#2196F3;
+        font-size: 16px;
+    
+    
+  }
+  
