@@ -1,6 +1,7 @@
+import { useAuth } from "../context/AuthContext";
 import React, {useRef, useState} from "react";
 import { Form,Button,Card, Alert  } from "react-bootstrap";
-import { useAuth } from "../context/AuthContext";
+
 
 
 export default function Signup(){
@@ -24,8 +25,7 @@ async function handleSubmit(e){
         await signup(emailRef.current.value,passwordRef.current.value)
     }catch (error) {
         setError(`Failed to create account: ${error.message}`);
-        console.error(error);
-      }
+          }
       
     setLoading(false);
 }

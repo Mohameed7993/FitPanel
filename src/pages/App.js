@@ -1,15 +1,16 @@
+import { AuthProvider } from '../context/AuthContext';
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import NoPage from  './pages/NoPage';
-import Blogs from './pages/Blogs';
-import Layout from './pages/Layout'; 
+import Home from './Home';
+import About from './About';
+import Contact from './Contact';
+import NoPage from  './NoPage';
+import Blogs from './Blogs';
+import Layout from './Layout'; 
 import { Container } from 'react-bootstrap';
-import Signup from './components/Signup';
-import LoginForm from './components/loginform';
-import { AuthProvider } from './context/AuthContext';
+import Signup from '../components/Signup';
+import LoginForm from '../components/loginform';
+
 
 
 
@@ -28,7 +29,7 @@ function App() {
               <div className="w-100" style={{maxWidth:"400px"}}>
              < Signup/>
              </div>
-              </Container>
+          </Container>
                 </AuthProvider>
               } 
               />
