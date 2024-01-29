@@ -12,10 +12,51 @@ import Signup from '../components/Signup';
 import LoginForm from '../components/loginform';
 
 
+import Master from './Master';
+import Login from './Login';
+import Profile from './Profile'
+import ForgotPassword from './ForgotPassword';
+import UpdateProfile from './UpdateProfile';
 
+///////////////still working on privateRoute!! last update 26/01--16:30
 
 function App() {
-  return (
+
+  return(
+    <>
+     <Container className="d-flex align-items-center justify-content-center" style={{minHeight: "550px"}}>
+        <div className="w-100" style={{maxWidth:"400px"}}>
+          <Router>
+            <AuthProvider>
+               <Routes>
+               <Route index path="/" element={<master/>}/>
+               <Route path="*" element={<NoPage />} />
+               <Route path="/signup" element={<Signup/>}/>
+               <Route path="/login" element={<Login/>}/>
+               <Route path="/profile" element={<Profile/>}/>
+               <Route path="/fogot-password" element={<ForgotPassword/>}/>
+               <Route path="/update-profile" element={<UpdateProfile/>}/>
+               </Routes>
+            </AuthProvider>
+         </Router>
+        </div>
+     </Container>
+     
+     <Router>
+      <Routes>
+        <Route index path="/" element={<Home/>}/>
+        
+      </Routes>
+     </Router>
+     
+     </>
+
+
+
+
+
+  );
+  /*return (
     <Router>
       <Routes>
         <Route path="/" element={<Layout />}>
@@ -38,7 +79,7 @@ function App() {
         </Route>
       </Routes>
     </Router>
-  );
+  );*/
 }
 
 export default App;
