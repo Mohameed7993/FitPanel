@@ -1,97 +1,111 @@
-import { useAuth } from "../context/AuthContext";
-import React, {useRef, useState} from "react";
-import { Form,Button,Card, Alert  } from "react-bootstrap";
-import { Link, Navigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
+import React, { useRef, useState } from "react";
+import { Form, Button, Card, Alert, Container, Toast, ToastContainer } from "react-bootstrap";
+import { Link, useNavigate } from "react-router-dom";
+import gymImage from './image/newlogo.png';
 
+export default function UpdateProfile() {
+    const emailRef = useRef();
+    const passwordRef = useRef();
+    const passwordConfirmRef = useRef();
+    const { currentUser, updateProfilePassword, updateProfileEmail } = useAuth();
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+    const [emailChanged, setEmailChanged] = useState(false);
+    const [passwordChanged, setPasswordChanged] = useState(false);
+    const navigate = useNavigate();
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setShowToast(false);
 
-export default function UpdateProfile(){
+        if (passwordRef.current.value !== passwordConfirmRef.current.value) {
+            return setError("Passwords do not match");
+        }
 
-    const emailRef=useRef()
-    const passwordRef=useRef()
-    const passwordConfirmRef=useRef()
-    const { currentUser, updateprofilePassword,updateprofileEmail } =useAuth()
-    const [error,setError]=useState('')
-    const [loading,setLoading]=useState(false)
-    const [successMessage, setSuccessMessage] = useState('');
+        setLoading(true);
+        setEmailChanged(emailRef.current.value !== currentUser.email);
+        setPasswordChanged(passwordRef.current.value !== '');
 
- function handleSubmit(e){
+        try {
+            const promises = [];
+            if (emailChanged) {
+                (updateProfileEmail(emailRef.current.value));
+            }
 
-    e.preventDefault()
+            if (passwordChanged) {
+               (updateProfilePassword(passwordRef.current.value));
+            }
 
-    if(passwordRef.current.value!==passwordConfirmRef.current.value){
-        return setError("Password do not match")
-    }
+          //  await Promise.all(promises);
 
-    const promises=[]
-    setLoading(true)
-    setError("")
+            let message = '';
+            if (emailChanged && passwordChanged) {
+                message = 'Email and password updated successfully';
+            } else if (emailChanged) {
+                message = 'Email updated successfully';
+            } else if (passwordChanged) {
+                message = 'Password updated successfully';
+            }
 
-    if(emailRef.current.value!==currentUser.email){
-        promises.push(updateprofileEmail(emailRef.current.value))
-    }
+            setToastMessage(message);
+            setShowToast(true);
+            setTimeout(3000); // Redirect after 3 seconds to allow toast to be visible
+        } catch {
+            setToastMessage('Failed to update account');
+            setShowToast(true);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    if(passwordRef.current.value){
-        promises.push(updateprofilePassword(passwordRef.current.value))
-    }
-
-    Promise.all(promises).then(()=>{
-        Navigate('/login')
-    }).catch(()=>{
-        setError('Faild to update account')
-    }).finally(() =>{
-        setLoading(false)
-    })
-
-}
-
-
-return(
-<>
-<Card >
-    <Card.Body>
-        <h2 className="text-center mb-4">Update Profile </h2>
-        {error && <Alert variant="danger">{error}</Alert>}
-        {successMessage && <Alert variant="success">{successMessage}</Alert>}
-        <Form onSubmit={handleSubmit}>
-            <Form.Group id="email">
-                <Form.Label>Email</Form.Label>
-                <Form.Control type="email" ref={emailRef} required 
-                defaultValue={currentUser.email}/>
-            </Form.Group>
-
-            <Form.Group id="password">
-                <Form.Label>Password</Form.Label>
-                <Form.Control type="password" ref={passwordRef} 
-                placeholder="leave blank to keep the same"/>
-            </Form.Group>
-
-            <Form.Group id="password-confirm">
-                <Form.Label>Password Confirmation</Form.Label>
-                <Form.Control type="password" ref={passwordConfirmRef} 
-                 placeholder="leave blank to keep the same"/>
-
-            </Form.Group>
-
-            <Button disabled={loading} className="w-100" type="submit">
-                Update
-            </Button>
-
-            <div className="w-100 text-center mt-2">
-                <Link to="/profile">Cancel!</Link>
+    return (
+        <Container className="row my-5 justify-content-between">
+            <div className="col mx-5">
+                <img src={gymImage} alt="Gym" />
             </div>
+            <Card className="h-50 w-50 col border-0" style={{ color: 'var(--text-color)' }}>
+                <Card.Body>
+                    <h2 className="text-center mb-4">Update Profile</h2>
+                    {error && <Alert variant="danger">{error}</Alert>}
+                    <Form onSubmit={handleSubmit}>
+                        <Form.Group id="email">
+                            <Form.Label>Email</Form.Label>
+                            <Form.Control type="email" ref={emailRef} required defaultValue={currentUser.email} />
+                        </Form.Group>
+                        <Form.Group id="password">
+                            <Form.Label>Password</Form.Label>
+                            <Form.Control type="password" ref={passwordRef} placeholder="Leave blank to keep the same" />
+                        </Form.Group>
+                        <Form.Group id="password-confirm">
+                            <Form.Label>Password Confirmation</Form.Label>
+                            <Form.Control type="password" ref={passwordConfirmRef} placeholder="Leave blank to keep the same" />
+                        </Form.Group>
+                        <Button disabled={loading} className="w-100" type="submit">
+                            Update
+                        </Button>
+                        <div className="w-100 text-center mt-2">
+                            <Link to="/customer">Cancel!</Link>
+                        </div>
+                    </Form>
+                </Card.Body>
+            </Card>
 
-
-        </Form>
-    </Card.Body>
-  
-
-</Card>
-
-
-
-</>
-)
-
-
+            {/* Bootstrap Toast Container */}
+            <ToastContainer position="top-end" className="p-3 text-dark">
+                <Toast
+               
+                    show={showToast}
+                    onClose={() => setShowToast(false)}
+                    delay={3000}
+                    autohide
+                >
+                    <Toast.Body>{toastMessage}</Toast.Body>
+                </Toast>
+            </ToastContainer>
+        </Container>
+    );
 }

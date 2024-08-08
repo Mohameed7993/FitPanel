@@ -1,113 +1,75 @@
-import { AuthProvider } from '../context/AuthContext';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
+import { useTheme } from './context/ThemeContext';
+
 import Home from './Home';
 import About from './About';
 import Contact from './Contact';
-import NoPage from  './NoPage';
-import Blogs from './Blogs';
-import Layout from './Layout'; 
-import { Container } from 'react-bootstrap';
-import Signup from '../components/Signup';
-import LoginForm from '../components/loginform';
-
-
+import ProtectedRoute from '../ProtectedRoute';
+import PublicRoute from '../PublicRoute';
+import NotFound from '../NotFound';
 import Master from './Master';
 import Login from './Login';
-import Profile from './Profile'
 import ForgotPassword from './ForgotPassword';
 import UpdateProfile from './UpdateProfile';
+import Layouts from './Layouts'; 
+import Signup from './Signup';
+import Footer from './footer';
+import Workoutplan from './Workoutplan';
+import Trainers from '../pages/OnlineTrainers/Trainers';
+import Manager from '../pages/MangersTool/Manager';
+import Customer from './Subscriber/Customers';
+import '../index.css';
 
-///////////////still working on privateRoute!! last update 26/01--16:30
+// const PublicRoute = ({ element: Component, ...rest }) => {
+//   const { currentUser,getUserRole } = useAuth();
+
+
+//   return  getUserRole&& !currentUser ? <Component {...rest} /> :getUserRole()===8? <Navigate to="/trainer"/>:getUserRole()===10? <Navigate to="/master"/>:
+//   getUserRole()===2? <Navigate to="/customer"/>:getUserRole()===9? <Navigate to="/manger"/>: <Navigate to="*"/>;
+// };
+
+
 
 function App() {
+ const { theme } = useTheme();
 
-  return(
-    <>
-     <Container className="d-flex align-items-center justify-content-center" style={{minHeight: "550px"}}>
-        <div className="w-100" style={{maxWidth:"400px"}}>
-          <Router>
-            <AuthProvider>
-               <Routes>
-               <Route index path="/" element={<master/>}/>
-               <Route path="*" element={<NoPage />} />
-               <Route path="/signup" element={<Signup/>}/>
-               <Route path="/login" element={<Login/>}/>
-               <Route path="/profile" element={<Profile/>}/>
-               <Route path="/fogot-password" element={<ForgotPassword/>}/>
-               <Route path="/update-profile" element={<UpdateProfile/>}/>
-               </Routes>
-            </AuthProvider>
-         </Router>
-        </div>
-     </Container>
-     
-     <Router>
-      <Routes>
-        <Route index path="/" element={<Home/>}/>
-        
-      </Routes>
-     </Router>
-     
-     </>
+ useEffect(() => {
+  document.documentElement.setAttribute('data-theme', theme);
+}, [theme]);
 
-
-
-
-
-  );
-  /*return (
+  return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-         <Route path="blogs" element={<Blogs />} />
-         <Route path="about" element={<About />} />
-          <Route path="contact" element={<Contact />} />
-          <Route path="New Member" element={
-          <AuthProvider> 
-          <Container className="d-flex align-items-center justify-content-center" style={{minHeight: "550px"}}>
-              <div className="w-100" style={{maxWidth:"400px"}}>
-             < Signup/>
-             </div>
-          </Container>
-                </AuthProvider>
-              } 
-              />
-          <Route path="Login" element={< LoginForm/>} />
-          <Route path="*" element={<NoPage />} />
-        </Route>
-      </Routes>
+      <AuthProvider>
+     
+        <Layouts />
+          <div className="d-flex flex-column min-vh-100">
+            <div className="flex-grow-1">
+              <Routes>
+                <Route path="/" element={<PublicRoute element={Home} />} />  
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/login" element={<Login/>} />  
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/trainer" element={<ProtectedRoute element={Trainers} requiredRole={8} />} />
+                <Route path="/customer" element={<ProtectedRoute element={Customer} requiredRole={2} />} />
+                <Route path="/forgot-password" element={<ProtectedRoute element={ForgotPassword} />} />
+                <Route path="/update-profile" element={<ProtectedRoute element={UpdateProfile} />} /> 
+                <Route path="/workoutplan" element={<ProtectedRoute element={Workoutplan} />} /> 
+                <Route path="/master" element={<ProtectedRoute element={Master} requiredRole={10}/>} />
+                <Route path="/manager" element={<ProtectedRoute element={Manager} requiredRole={9}/>} /> 
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
+            <Footer />
+          </div>
+      </AuthProvider>
     </Router>
-  );*/
+  );
 }
 
 export default App;
-
-
-
-/*import logo from './logo.svg';
-import './App.css';
-
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
-
-export default App;*/

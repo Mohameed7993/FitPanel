@@ -1,0 +1,31 @@
+.admin-layout {
+    display: flex;
+  }
+  
+  .admin-sidebar {
+    width: 200px;
+    background-color: #f8f9fa;
+    padding: 15px;
+  }
+  
+  .admin-sidebar ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .admin-sidebar li {
+    margin: 10px 0;
+    cursor: pointer;
+    color: #007bff;
+  }
+  
+  .admin-sidebar li:hover {
+    text-decoration: underline;
+  }
+  
+  .admin-content {
+    flex-grow: 1;
+    padding: 15px;
+    background-color: #ffffff;
+  }
+  

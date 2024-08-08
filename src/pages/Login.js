@@ -1,101 +1,107 @@
-import { useAuth } from "../context/AuthContext";
-import React, {useRef, useState} from "react";
-import { Form,Button,Card, Alert  } from "react-bootstrap";
-import { Link , useNavigate  } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
+import React, { useRef, useState } from "react";
+import { Form, Button, Card, Alert, Container } from "react-bootstrap";
+import { Link, useNavigate } from "react-router-dom";
+import gymImage from './image/newlogo.png';
 
+export default function Login() {
+  const emailRef = useRef();
+  const passwordRef = useRef();
+  const { login, currentUser,logout } = useAuth();
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-
-
-/*
-navigate=history
-Navigating to a New Path:
-
-Old (useHistory): history.push('/path')
-New (useNavigate): navigate('/path')
-Replacing the Current Entry in History:
-
-Old: history.replace('/path')
-New: navigate('/path', { replace: true })
-Going Back and Forward in History:
-
-Old: history.goBack() and history.goForward()
-New: navigate(-1) for back and navigate(1) for forward
-Navigating to a Specific Page in History:
-
-Old: history.go(number)
-New: navigate(number) where number can be any integer (e.g., navigate(-2) to go back two pages)
-Declarative Navigation using Redirect:
-
-Old: <Redirect to="/path" />
-New: <Navigate to="/path" replace />
-
-*/
-
-
-
-
-export default function Login(){
-
-    const emailRef=useRef()
-    const passwordRef=useRef()
-    const { login } =useAuth()
-    const [error,setError]=useState('')
-    const [loading,setLoading]=useState(false)
-    const navigate = useNavigate()
-
-async function handleSubmit(e){
-    e.preventDefault()
-
-   
+  async function handleSubmit(e) {
+    e.preventDefault();
     try {
-        setError("")
-        setLoading(true)
-        await login(emailRef.current.value,passwordRef.current.value)
-        navigate('/profile')   //the page that i want to go there
-    }catch (error) {
-        setError("Failed to Log In");
+      setError("");
+      setLoading(true);
+
+      // Perform login
+      await login(emailRef.current.value, passwordRef.current.value);
+
+      // Retrieve user details from localStorage
+      const userlogindetails = JSON.parse(localStorage.getItem('userLoginDetails'));
+
+      if (userlogindetails) {
+        if (userlogindetails.membershipStatus === 'activated') {
+          switch (userlogindetails.role) {
+            case 2:
+              navigate('/customer');
+              break;
+            case 10:
+              navigate('/master');
+              break;
+            case 9:
+              navigate('/manager');
+              break;
+            case 8:
+              navigate('/trainer');
+              break;
+            default:
+              navigate('/admin');
+              break;
           }
-      
-    setLoading(false);
-}
+        } else {
+          setError("Account Suspended!");
+          await logout();
 
+        }
+      } else {
+        setError("Failed to fetch user details");
+        await logout();
 
-return(
-<>
-<Card >
-    <Card.Body>
-        <h2 className="text-center mb-4">Log In </h2>
-        {error && <Alert variant="danger">{error}</Alert>}
-        <Form onSubmit={handleSubmit}>
-            <Form.Group id="email">
-                <Form.Label>Email</Form.Label>
-                <Form.Control type="email" ref={emailRef} required/>
-            </Form.Group>
+      }
+    } catch (error) {
+      Alert("Failed to log in");
+      await logout();
 
-            <Form.Group id="password">
-                <Form.Label>Password</Form.Label>
-                <Form.Control type="password" ref={passwordRef} required/>
-            </Form.Group>
+    } finally {
+      setLoading(false);
+    }
+  }
 
-
-            <Button disabled={loading} className="w-100" type="submit">
-                Log In
-            </Button>
-
-        </Form>
-        <div className="w-100 text-center mt-3">
-               <Link to="/fogot-password">Forgot Password?</Link>
+  return (
+    <>
+      {!currentUser && (
+        <Container className="d-flex justify-content-center align-items-center my-5" style={{ minHeight: '100vh' }}>
+          <div className="row w-100">
+            <div className="col-12 col-md-6 d-flex justify-content-center mb-4 mb-md-0">
+              <img src={gymImage} alt="Gym" className="img-fluid" />
             </div>
+            <Card className="w-100 w-md-75 mx-auto" style={{ maxWidth: '500px', backgroundColor: 'transparent', border: 'none' }}>
+              <Card.Body>
+                <h2 className="text-center mb-4" style={{ color: 'var(--text-color)' }}>Log In</h2>
+                {error && <Alert variant="danger">{error}</Alert>}
+                <Form onSubmit={handleSubmit} style={{ color: 'var(--text-color)' }}>
+                  <Form.Group id="email">
+                    <Form.Label>Email</Form.Label>
+                    <Form.Control type="email" ref={emailRef} required />
+                  </Form.Group>
 
-    </Card.Body>
-</Card>
-            <div className="w-100 text-center mt-2">
-               Need an account? <Link to="/signup">Sign Up</Link>
-            </div>
+                  <Form.Group id="password">
+                    <Form.Label>Password</Form.Label>
+                    <Form.Control type="password" ref={passwordRef} required />
+                  </Form.Group>
 
-
-</>
-)
-
-
+                  <div className="text-center">
+                    <Button disabled={loading} className="my-2" style={{ color: 'var(--text-color)' }} type="submit">
+                      Log In
+                    </Button>
+                  </div>
+                </Form>
+                <div className="w-100 text-center mt-3">
+                  <Link to="/forgot-password">Forgot Password?</Link>
+                </div>
+                <div className="w-100 text-center mt-2" style={{ color: 'var(--text-color)' }}>
+                  Need an account? <Link to="/signup">Sign Up</Link>
+                </div>
+              </Card.Body>
+            </Card>
+          </div>
+        </Container>
+      )}
+    </>
+  );
 }

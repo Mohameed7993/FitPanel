@@ -1,0 +1,19 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "ggg",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "hgh",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "ggg",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
