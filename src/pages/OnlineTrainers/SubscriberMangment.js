@@ -31,15 +31,24 @@ const SubscriberMang = ({ onSelectCustomer }) => {
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
-
-  const getFormattedDate = (timestamp) => {
-    if (!timestamp || isNaN(timestamp)) {
+  const getFormattedDate = (time) => {
+    let timestamp;
+  
+    // Check if 'time' is already a Timestamp object
+    if (time instanceof Timestamp) {
+      timestamp = time;
+    } else if (time && time.seconds !== undefined && time.nanoseconds !== undefined) {
+      // If 'time' is raw data, convert it to a Timestamp object
+      timestamp = new Timestamp(time.seconds, time.nanoseconds);
+    } else {
+      // Invalid input
       return "Invalid Date";
     }
-
-    const date = new Date(timestamp.toDate());
+  
+    // Convert Timestamp to Date and format it
+    const date = timestamp.toDate();
     const day = date.getDate();
-    const month = date.getMonth() + 1;
+    const month = date.getMonth() + 1; // Months are zero-indexed
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
@@ -78,12 +87,27 @@ const SubscriberMang = ({ onSelectCustomer }) => {
 
   const fetchCustomers = async () => {
     if (!userlogindetails) return;
-
-    const customersCollection = collection(db, 'customers');
-    const customersQuery = query(customersCollection, where('trainerID', '==', userlogindetails.UserId));
-    const customerSnapshot = await getDocs(customersQuery);
-    const customerList = customerSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setCustomers(customerList);
+  
+    try {
+      // Construct the URL with the UserId as a query parameter
+      const url = `/MoDumbels/customers?trainerID=${encodeURIComponent(userlogindetails.UserId)}`;
+  
+      const response = await fetch(url, {
+        method: 'GET', // Use GET since we're passing parameters in the URL
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        setCustomers(data.customers);
+      } else {
+        console.error('Failed to fetch customers:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+    }
   };
 
   useEffect(() => {

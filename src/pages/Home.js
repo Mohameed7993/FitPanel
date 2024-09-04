@@ -6,6 +6,8 @@ import trainerImage from './image/2.png'; // Replace with actual image path
 import customerImage from './image/1.png'; // Replace with actual image path
 
 function Home() {
+ 
+
   return (<>
     <Container className="d-flex flex-column align-items-center justify-content-center "  style={{ borderBottom: '3px solid var(--text-color)' }}>
       <div className="row align-items-center">

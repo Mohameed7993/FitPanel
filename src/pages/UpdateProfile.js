@@ -26,12 +26,12 @@ export default function UpdateProfile() {
             return setError("Passwords do not match");
         }
 
+        console.log(currentUser)
         setLoading(true);
         setEmailChanged(emailRef.current.value !== currentUser.email);
         setPasswordChanged(passwordRef.current.value !== '');
 
         try {
-            const promises = [];
             if (emailChanged) {
                 (updateProfileEmail(emailRef.current.value));
             }
@@ -40,7 +40,6 @@ export default function UpdateProfile() {
                (updateProfilePassword(passwordRef.current.value));
             }
 
-          //  await Promise.all(promises);
 
             let message = '';
             if (emailChanged && passwordChanged) {

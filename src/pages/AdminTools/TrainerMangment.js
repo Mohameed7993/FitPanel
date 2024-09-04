@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form ,Row,Col} from "react-bootstrap";
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc } from "firebase/firestore";
+import { getFirestore, collection, Timestamp, where, getDocs, doc, updateDoc, getDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFunctions, httpsCallable } from "firebase/functions"; // Import Firebase Functions
 import Pagination from 'react-bootstrap/Pagination';
@@ -35,10 +35,13 @@ const TrainersManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const usersCollection = collection(db, 'Users');
-      const q = query(usersCollection, where("role", "==", 8));
-      const usersSnapshot = await getDocs(q);
-      const userData = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      const response = await fetch('/MoDumbels/Users');
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const userData = await response.json();
+   
       setUsers(userData);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -102,66 +105,73 @@ const TrainersManagement = () => {
   };
 
   const updatePlanCount = async (oldPlanID, newPlanID) => {
-    const planCollection = collection(db, 'TrainersPlans');
-
-    if(oldPlanID!==""){
-        const oldPlanDocRef = doc(planCollection, oldPlanID);
-        const oldPlanDoc = await getDoc(oldPlanDocRef);
-
-        if (oldPlanDoc.exists()) {
-            const oldPlanData = oldPlanDoc.data();
-            await updateDoc(oldPlanDocRef, { trainersNumber: oldPlanData.trainersNumber - 1 });
-          }
-    }
-    if(newPlanID!==""){
-        const newPlanDocRef = doc(planCollection, newPlanID);
-        const newPlanDoc = await getDoc(newPlanDocRef);
-
-        if (newPlanDoc.exists()) {
-            const newPlanData = newPlanDoc.data();
-                  await updateDoc(newPlanDocRef, { trainersNumber: newPlanData.trainersNumber + 1 });
-          }
-
+    try {
+      const response = await fetch('/MoDumbels/UpdateCounterAtTrainersPlan', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ oldPlanID, newPlanID }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
+      const result = await response.json();
+      console.log(result.message); // Log success message
+    } catch (error) {
+      console.error('Error updating plan counts:', error);
     }
   };
+  
 
   const handleUpdateUser = async () => {
     setShowLoadingModal(true)
     try {
-      let imageURL = editUser.ImageURL;
-  
-      if (imageFile) {
-        const imageRef = ref(storage, `Users/${editUser.id}`);
-        await uploadBytes(imageRef, imageFile);
-        imageURL = await getDownloadURL(imageRef);
-      }
-  
+      const formData = new FormData();
       const expirationDate = calculateExpirationDate();
-  
-      // Ensure previousPlanID and editUser.PlanID are valid
-      const oldPlanID = previousPlanID;
-      const newPlanID = editUser.PlanID;
-  
-      // Update plan counts only if the plan has changed
-      if (oldPlanID !== newPlanID) {
-        await updatePlanCount(oldPlanID, newPlanID);
-      }
-  
-      // Ensure editUser.id is valid
-      if (!editUser.id) {
+
+        // Ensure previousPlanID and editUser.PlanID are valid
+        const oldPlanID = previousPlanID;
+        const newPlanID = editUser.PlanID;
+    
+        // Update plan counts only if the plan has changed
+        if (oldPlanID !== newPlanID) {
+          await updatePlanCount(oldPlanID, newPlanID);
+          formData.append('planID', editUser.PlanID);
+          formData.append('expirationDate',expirationDate);
+        }
+
+       // Ensure editUser.id is valid
+       if (!editUser.id) {
         throw new Error("User ID is missing.");
       }
   
-      const userDocRef = doc(db, 'Users', editUser.id);
-      await updateDoc(userDocRef, {
-        FirstName: editUser.FirstName,
-        LastName: editUser.LastName,
-        EmailAddress: editUser.EmailAddress,
-        membershipStatus: editUser.membershipStatus,
-        PlanID: newPlanID, // Update the user's plan
-        ImageURL: imageURL,
-        expirationDate: expirationDate
+
+      
+      formData.append('userId', editUser.id);
+      formData.append('firstName', editUser.FirstName);
+      formData.append('lastName', editUser.LastName);
+      formData.append('emailAddress', editUser.EmailAddress);
+      
+      
+      if (imageFile) {
+        formData.append('imageFile', imageFile);
+        console.log(1)
+      }
+  
+      // Send the update request
+      const response = await fetch('/MoDumbels/UpdateTrainerDetails', {
+        method: 'PUT',
+        body: formData,
       });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
+      await response.json();
   
       fetchUsers();
       setShowEditModal(false);
@@ -177,21 +187,45 @@ const TrainersManagement = () => {
   const handleSuspendToggle = async (userId, currentStatus) => {
     const newStatus = currentStatus === 'activated' ? 'suspended' : 'activated';
     try {
-      await updateDoc(doc(db, 'Users', userId), { membershipStatus: newStatus });
+      // Make a PUT request to the server to update membership status
+      const response = await fetch('/MoDumbels/UpdateTrainerStatus', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, newStatus }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
+      // Update the local state after a successful update
+      const updatedUser = await response.json();
       setUsers(users.map(user => user.id === userId ? { ...user, membershipStatus: newStatus } : user));
     } catch (error) {
       console.error("Error toggling membership status:", error);
     }
   };
 
-  const getFormattedDate = (timestamp) => {
-    if (!timestamp || isNaN(timestamp)) {
+  const getFormattedDate = (time) => {
+    let timestamp;
+  
+    // Check if 'time' is already a Timestamp object
+    if (time instanceof Timestamp) {
+      timestamp = time;
+    } else if (time && time.seconds !== undefined && time.nanoseconds !== undefined) {
+      // If 'time' is raw data, convert it to a Timestamp object
+      timestamp = new Timestamp(time.seconds, time.nanoseconds);
+    } else {
+      // Invalid input
       return "Invalid Date";
     }
-
-    const date = new Date(timestamp.toDate());
+  
+    // Convert Timestamp to Date and format it
+    const date = timestamp.toDate();
     const day = date.getDate();
-    const month = date.getMonth() + 1;
+    const month = date.getMonth() + 1; // Months are zero-indexed
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
@@ -237,7 +271,7 @@ const TrainersManagement = () => {
   const indexOfFirstCustomer = indexOfLastCustomer - rowsPerPage;
   const currentCustomers = filteredCustomers.slice(indexOfFirstCustomer, indexOfLastCustomer);
 
-
+  const filteredUsers = currentCustomers.filter(user => user.role <= 9);
   return (
     
     <div className=" mt-4">
@@ -269,8 +303,9 @@ const TrainersManagement = () => {
           </tr>
         </thead>
         <tbody>
-          {currentCustomers.map((user) => (
+          {filteredUsers.map((user) => (
             <tr key={user.id}>
+              
               <td>{user.id}</td>
               <td>
                 {user.ImageURL ? (

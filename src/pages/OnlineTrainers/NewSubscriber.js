@@ -4,6 +4,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Form, Button, Container, Row, Col, Toast } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import LoadingModal from '../LoadingModal'; // Adjust the path as necessary
+import gymImage from '../image/newlogo.png'; // Import your image file
 
 const AddNewSubscriber = () => {
   const { signup, currentUser, userlogindetails } = useAuth();
@@ -204,14 +205,18 @@ const AddNewSubscriber = () => {
   };
 
   return (
-    <Container className="mt-4" >
-      <h2 style={{ color: 'var(--text-color)' }}>Add New Subscriber:</h2>
-      <Form onSubmit={handleSubmit} >
-        <Row>
+    <Container className="mt-5 text-end" >
+      <h2 style={{ color: 'var(--text-color)' }}>:הוספת מתאמן חדש</h2>
+      <Form onSubmit={handleSubmit}  >
+        <Row className="justify-content-end">
+          <Col md={6}>
+          <img src={gymImage} alt="Gym" className="img-fluid mx-5" />
+
+          </Col>
           <Col md={6}>
             {/* Required Fields Column */}
-            <Form.Group>
-              <Form.Label>Name <span className="text-danger">*</span></Form.Label>
+            <Form.Group as={Row}>
+              <Form.Label> <span className="text-danger">*</span>שם</Form.Label>
               <Form.Control
                 type="text"
                 name="name"
@@ -223,7 +228,7 @@ const AddNewSubscriber = () => {
             </Form.Group>
 
             <Form.Group>
-              <Form.Label>Email <span className="text-danger">*</span></Form.Label>
+              <Form.Label> <span className="text-danger">*</span>אימייל</Form.Label>
               <Form.Control
                 type="email"
                 name="email"
@@ -235,7 +240,7 @@ const AddNewSubscriber = () => {
             </Form.Group>
 
             <Form.Group>
-              <Form.Label>Phone Number <span className="text-danger">*</span></Form.Label>
+              <Form.Label><span className="text-danger">*</span>מספר טלפון</Form.Label>
               <Form.Control
                 type="text"
                 name="phoneNumber"
@@ -247,7 +252,7 @@ const AddNewSubscriber = () => {
             </Form.Group>
 
             <Form.Group>
-              <Form.Label>ID <span className="text-danger">*</span></Form.Label>
+              <Form.Label> <span className="text-danger">*</span>מספר ת,ז</Form.Label>
               <Form.Control
                 type="text"
                 name="id"
@@ -260,29 +265,30 @@ const AddNewSubscriber = () => {
 
             {/* Subscription Period Dropdown */}
             <Form.Group>
-              <Form.Label>Subscription Period <span className="text-danger">*</span></Form.Label>
+              <Form.Label><span className="text-danger">*</span>תקופת מינוי</Form.Label>
               <Form.Control as="select" value={subscriptionPeriod} onChange={handleSubscriptionPeriodChange} required>
                 <option value="">Select period</option>
-                <option value="1">1 Month</option>
-                <option value="3">3 Months</option>
-                <option value="6">6 Months</option>
+                <option value="1">חודש</option>
+                <option value="3">חודשים 3</option>
+                <option value="6">חודשים 6</option>
               </Form.Control>
             </Form.Group>
 
             {/* File Uploads */}
             <Form.Group>
-              <Form.Label>Training Plan (optional)</Form.Label>
+              <Form.Label>תוכנית אימון (optional)</Form.Label>
               <Form.Control type="file" name="trainingPlan" onChange={handleFileChange} />
             </Form.Group>
 
             <Form.Group>
-              <Form.Label>Food Plan (optional)</Form.Label>
+              <Form.Label>תוכנית אוכל (optional)</Form.Label>
               <Form.Control type="file" name="foodPlan" onChange={handleFileChange} />
             </Form.Group>
 
             {/* Submit Button */}
             <Button variant="primary" type="submit" className="mt-3">
-              Add Subscriber
+              <strong> הוספת מתאמן </strong>
+
             </Button>
           </Col>
         </Row>

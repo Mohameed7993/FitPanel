@@ -63,6 +63,8 @@ export default function Layouts() {
         <div className="d-flex align-items-center">
           <a className="navbar-brand" href="#">
             <img src={logoImage} alt="Logo" style={{ width: '90px', height: 'auto' }} />
+            {/* <button onClick={logout}>aaaa</button> */}
+
           </a>
           {!currentUser&&( <button
             className="navbar-toggler d-lg-none ms-3"

@@ -32,42 +32,52 @@ const MasterDashboard = () => {
   const [monthlyRegistrations, setMonthlyRegistrations] = useState([]);
   const [expiringUsers, setExpiringUsers] = useState([]);
   const [profitDataByMonth, setProfitDataByMonth] = useState([]);
+  const [userData,setUserData]=useState()
   const db = getFirestore();
 
   useEffect(() => {
     const fetchUserData = async () => {
+    
       try {
-        const usersCollection = collection(db, 'Users');
-        const usersSnapshot = await getDocs(usersCollection);
-        const userData = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Fetch user data from the server endpoint
+        const response = await fetch('/MoDumbels/Users');
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const userData = await response.json();
         
-        // Calculate monthly registrations
+        // Process the user data
         const registrations = {};
         userData.forEach(user => {
-          const month = new Date(user.Participating_from.toDate()).toLocaleString('default', { month: 'short', year: 'numeric' });
+          // Convert Participating_from timestamp to Date object
+          const participatingDate = new Date(user.Participating_from.seconds * 1000); // Assuming timestamp is in seconds
+          const month = participatingDate.toLocaleString('default', { month: 'short', year: 'numeric' });
           registrations[month] = (registrations[month] || 0) + 1;
         });
         setMonthlyRegistrations(Object.entries(registrations).map(([month, count]) => ({ month, count })));
-
+    
         // Find expiring users
         const now = new Date();
         const expiring = userData.filter(user => {
-          const expirationDate = user.expirationDate ? new Date(user.expirationDate.toDate()) : null;
+          // Convert expirationDate timestamp to Date object
+          const expirationDate = user.expirationDate ? new Date(user.expirationDate.seconds * 1000) : null; // Assuming timestamp is in seconds
           return expirationDate && expirationDate <= new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // within next 7 days
         });
         setExpiringUsers(expiring);
+    
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    
 
         // Calculate profit data
-        const profitData = plans.map(plan => (plan.trainersNumber || 0) * (plan.Costs || 0));
         const profitByMonth = plans.map(plan => ({
           month: plan.PlanName,
           profit: (plan.trainersNumber || 0) * (plan.Costs || 0),
         }));
         setProfitDataByMonth(profitByMonth);
 
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
+   
     };
 
     fetchUserData();

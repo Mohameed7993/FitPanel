@@ -427,54 +427,86 @@ export function AuthProvider({ children }) {
   const signup = async (email, password) => {
     // Create a new user without affecting the current user state
     setAuthOperation('signup');
-    await createUserWithEmailAndPassword(auth, email, password);
     setAuthOperation(null);
   }
 
+  // const login = async (email, password) => {
+  //   const db = getFirestore();
+  //   try {
+  //     setIsModalLoading(true);
+  //     setAuthOperation('login');
+
+  //     // Sign in the user
+  //     await signInWithEmailAndPassword(auth, email, password);
+
+  //     // Retrieve additional user details
+  //     const user = auth.currentUser; // Get the currently authenticated user
+  //     if (user) {
+  //       setCurrentUser(user);
+  //       console.log(user)
+  //       localStorage.setItem('currentUser', JSON.stringify(user));
+
+  //       const userDetailsQuery = query(collection(db, 'Users'), where('EmailAddress', '==', email));
+  //       const querySnapshot = await getDocs(userDetailsQuery);
+
+  //       const customerDetailsQuery = query(collection(db, 'customers'), where('email', '==', email));
+  //       const querySnapshot1 = await getDocs(customerDetailsQuery);
+
+  //       if (!querySnapshot.empty) {
+  //         const userDetails = querySnapshot.docs[0].data();
+  //         setUserLoginDetails(userDetails);
+  //         localStorage.setItem('userLoginDetails', JSON.stringify(userDetails));
+  //       } else if (!querySnapshot1.empty) {
+  //         const customerDetails = querySnapshot1.docs[0].data();
+  //         setUserLoginDetails(customerDetails);
+  //         localStorage.setItem('userLoginDetails', JSON.stringify(customerDetails));
+  //       } else {
+  //         console.log('No user details found for email:', email);
+  //         return null;
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error signing in:', error);
+  //     throw error; // Re-throw the error for handling in the component
+  //   } finally {
+  //     setIsModalLoading(false);
+  //     setAuthOperation(null);
+  //   }
+  // };
   const login = async (email, password) => {
-    const db = getFirestore();
     try {
       setIsModalLoading(true);
       setAuthOperation('login');
-
-      // Sign in the user
-      await signInWithEmailAndPassword(auth, email, password);
-
-      // Retrieve additional user details
-      const user = auth.currentUser; // Get the currently authenticated user
-      if (user) {
+  
+      // Send login request to the server
+      const response = await fetch('/MoDumbels/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        const { user, userDetails } = data;
         setCurrentUser(user);
-        console.log(user)
+        console.log(user);
         localStorage.setItem('currentUser', JSON.stringify(user));
-
-        const userDetailsQuery = query(collection(db, 'Users'), where('EmailAddress', '==', email));
-        const querySnapshot = await getDocs(userDetailsQuery);
-
-        const customerDetailsQuery = query(collection(db, 'customers'), where('email', '==', email));
-        const querySnapshot1 = await getDocs(customerDetailsQuery);
-
-        if (!querySnapshot.empty) {
-          const userDetails = querySnapshot.docs[0].data();
-          setUserLoginDetails(userDetails);
-          localStorage.setItem('userLoginDetails', JSON.stringify(userDetails));
-        } else if (!querySnapshot1.empty) {
-          const customerDetails = querySnapshot1.docs[0].data();
-          setUserLoginDetails(customerDetails);
-          localStorage.setItem('userLoginDetails', JSON.stringify(customerDetails));
-        } else {
-          console.log('No user details found for email:', email);
-          return null;
-        }
+  
+        setUserLoginDetails(userDetails);
+        localStorage.setItem('userLoginDetails', JSON.stringify(userDetails));
+      } else {
+        console.log(data.message); // Handle server-side errors
       }
     } catch (error) {
       console.error('Error signing in:', error);
-      throw error; // Re-throw the error for handling in the component
     } finally {
       setIsModalLoading(false);
       setAuthOperation(null);
     }
   };
-
 
   const logout = async () => {
     setAuthOperation('logout');
@@ -509,12 +541,32 @@ export function AuthProvider({ children }) {
   };
 
   const updateProfileEmail = (email) => {
+
     return updateEmail(auth.currentUser, email);
   };
 
   const updateProfilePassword = (password) => {
-    return updatePassword(auth.currentUser, password);
+    return updatePassword(auth, password);
   };
+
+  // const updateProfilePassword = async (newPassword) => {
+  //   console.log(11)
+  //   try {
+  //     const response = await fetch('/MoDumbels/updatepassword', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ uid:auth.currentUser, newPassword }),
+  //     });
+  //     const result = await response.json();
+  //     if (response.ok) {
+  //       console.log(result.message);
+  //     } else {
+  //       console.error(result.message);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //   }
+  // };
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {

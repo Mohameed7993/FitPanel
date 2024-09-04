@@ -1,26 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { getFirestore, collection, query, getDocs } from "firebase/firestore"; // Ensure you're using the correct imports for Firestore
+import React from "react";
 import { Container,Table } from "react-bootstrap";
+import useFetchPlans from '../useFetchGymPlans';
+
 
 const TrainersPlan = () => {
-  const [plans, setPlans] = useState([]);
-
-  useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const db = getFirestore(); // Initialize Firestore
-        const plansCollection = collection(db, 'TrainersPlans'); // Reference to TrainersPlans collection
-        const q = query(plansCollection); // Create query (add conditions if needed)
-        const plansSnapshot = await getDocs(q); // Execute the query
-        const plansData = plansSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); // Map documents to data
-        setPlans(plansData); // Set state with fetched data
-      } catch (error) {
-        console.error("Error fetching plans: ", error); // Handle errors
-      }
-    };
-
-    fetchPlans();
-  }, []);
+  const {plans}=useFetchPlans()
 
   return (
     <Container>

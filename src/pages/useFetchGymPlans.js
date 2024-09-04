@@ -1,31 +1,28 @@
 import { useState, useEffect } from 'react';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
 
 const useFetchPlans = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const db = getFirestore();
 
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const plansCollection = collection(db, 'TrainersPlans');
-        const plansSnapshot = await getDocs(plansCollection);
-        const plansData = plansSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        const response = await fetch('/MoDumbels/plans'); // Endpoint to fetch plans from the server
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const plansData = await response.json();
         setPlans(plansData);
-        setLoading(false);
       } catch (err) {
         setError(err);
+      } finally {
         setLoading(false);
       }
     };
 
     fetchPlans();
-  }, [db]);
+  }, []);
 
   return { plans, loading, error };
 };
