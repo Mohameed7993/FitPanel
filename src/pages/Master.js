@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
 
-import UserManagement from './AdminTools/UserManagement';
-import AddingNewGym from './AdminTools/AddingNewGym';
-import GymsStudio from './AdminTools/GymsStudio';
-import StudiosPlan from './AdminTools/StudiosPlans';
 import MasterDashboard from './AdminTools/MasterDashboard';
 import AddOnlineTrainer from './AdminTools/NewOnlineTrainer';
 import TrainersMangment from './AdminTools/TrainerMangment';
-import TrainersPLan from './AdminTools/TrainerPlans';
-import logo from './image/Mo ‘s.png';
+import logo from './image/fitpanel.png';
 import { useAuth } from './context/AuthContext';
 
 
@@ -28,20 +23,10 @@ const Master = () => {
 
   const renderView = () => {
     switch (currentView) {
-      case 'userManagement':
-        return <UserManagement />;
-      case 'AddNewGymStudio':
-        return <AddingNewGym />;
-      case 'GymsStudio':
-        return <GymsStudio />;
-      case 'StudiosPlan':
-        return <StudiosPlan />;
       case 'addOnlineTrainer':
         return <AddOnlineTrainer />;
       case 'TrainersMangment':
         return <TrainersMangment />;
-      case 'TrainersPLan':
-        return <TrainersPLan />;
       case 'dashboard':
         return <MasterDashboard />;
 
@@ -51,7 +36,7 @@ const Master = () => {
   };
 
   const getNavItemClass = (view) =>
-    currentView === view ? 'nav-link  bg-info bg-opacity-50' : 'nav-link ';
+    currentView === view ? 'nav-link  bg-white bg-opacity-50' : 'nav-link ';
 
   async function handleLogout() {
     setError('');
@@ -65,17 +50,19 @@ const Master = () => {
 
   return (
     <div className="d-flex">
-      <nav  className=" text-end  p-3 sidebar"
-        style={{
-          width: '250px',
-          height: '100vh',
-          position: 'fixed',
-          right: 0,
-          top: 0,
-          bottom: 0,
-          backgroundColor: 'var(--secondary-color)', // Adjusted for dark/light themes
-          borderRight: '2px solid var(--primary-color)', // Adjusted for dark/light themes
-         }}>
+     <nav className="text-end p-3 sidebar"
+  style={{
+    width: '220px',
+    height: '100vh',
+    position: 'fixed',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: 'var(--text-color)',  // ✅ Dark sidebar background
+    color: 'white',              // ✅ White text
+    borderRight: '2px solid #fff',
+  }}>
+
         <div className="text-center mb-4">
           <img src={logo} alt="Logo" style={{ width: '165px', height: 'auto' }} />
         </div>
@@ -96,7 +83,7 @@ const Master = () => {
               href="#"
               className={getNavItemClass('TrainersMangment')}
               onClick={() => handleNavClick('TrainersMangment')}
-            > מאמנים אונליין
+            >  רשימת מתאמנים  
               <FontAwesomeIcon icon={faUserTie} className="me-2" />
             </a>
           </li>
@@ -110,35 +97,7 @@ const Master = () => {
               
             </a>
           </li>
-          <li className="nav-item">
-            <a
-              href="#"
-              className={getNavItemClass('TrainersPLan')}
-              onClick={() => handleNavClick('TrainersPLan')}
-            > תוכניות מאמנים
-              <FontAwesomeIcon icon={faClipboardList} className="me-2" />
-            </a>
-          </li>
-          <li className="nav-item">
-            <a
-              href="#"
-              className={getNavItemClass('notifications')}
-              onClick={() => handleNavClick('notifications')}
-            > התראות
-              <FontAwesomeIcon icon={faBell} className="me-2" />
-              
-            </a>
-          </li>
-          <li className="nav-item">
-            <a
-              href="#"
-              className={getNavItemClass('settings')}
-              onClick={() => handleNavClick('settings')}
-            >הגדרות
-              <FontAwesomeIcon icon={faCog} className="me-2" />
-              
-            </a>
-          </li>
+
           <li className="nav-item">
             <a
               href="#"

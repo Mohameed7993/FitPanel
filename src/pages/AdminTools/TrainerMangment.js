@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form ,Row,Col} from "react-bootstrap";
-import { getFirestore, collection, Timestamp, where, getDocs, doc, updateDoc, getDoc } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {Timestamp} from "firebase/firestore";
+
 import { getFunctions, httpsCallable } from "firebase/functions"; // Import Firebase Functions
 import Pagination from 'react-bootstrap/Pagination';
 import LoadingModal from '../LoadingModal';
@@ -29,8 +29,7 @@ const TrainersManagement = () => {
   const [imageFile, setImageFile] = useState(null);
   const [months, setMonths] = useState(""); // State to store the selected number of months
 
-  const db = getFirestore();
-  const storage = getStorage();
+  
   const functions = getFunctions(); // Initialize Firebase Functions
 
   const fetchUsers = async () => {
@@ -93,16 +92,21 @@ const TrainersManagement = () => {
 
   const calculateExpirationDate = () => {
     const currentDate = new Date();
+  
     if (editUser.PlanID === "111") {
-      // Trial Plan: expiration date after 2 weeks
-      currentDate.setDate(currentDate.getDate() + 14);
-    } else if (editUser.PlanID === "211" || editUser.PlanID === "241") {
-      // Elite or Premium Plan: expiration date based on months
-      const numOfMonths = parseInt(months, 10);
-      currentDate.setMonth(currentDate.getMonth() + numOfMonths);
+      // Trial Plan: 1 month
+      currentDate.setMonth(currentDate.getMonth() + 1);
+    } else if (editUser.PlanID === "211") {
+      // Elite Plan: 3 months
+      currentDate.setMonth(currentDate.getMonth() + 3);
+    } else if (editUser.PlanID === "241") {
+      // Premium Plan: 6 months
+      currentDate.setMonth(currentDate.getMonth() + 6);
     }
+  
     return currentDate;
   };
+  
 
   const updatePlanCount = async (oldPlanID, newPlanID) => {
     try {
@@ -230,20 +234,30 @@ const TrainersManagement = () => {
     return `${day}/${month}/${year}`;
   };
 
+
   const handleDeleteUser = async (user) => {
-    setShowLoadingModal(true)
-
-    const deleteUserFunction = httpsCallable(functions, 'deleteUser'); // Initialize Cloud Function
+    setShowLoadingModal(true);
     try {
-      await deleteUserFunction({ email: users.find(users => users.id === user.UserId).EmailAddress, id:user.UserId});
-      updatePlanCount(user.PlanID,"")
-      fetchUsers();
+      const res = await fetch(`/MoDumbels/deleteTrainer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          TrainerId: user.UserId,
+          email: user.EmailAddress
+        })
+      });
+      if (res.ok) {
+        await fetchUsers(); // ✅ ensure data refreshes after deletion
+      }else {
+        console.error('Failed to delete customer.');
+      }
     } catch (error) {
-      console.error("Error deleting user:", error);
+      console.error('Error deleting customer:', error);
     }
-    setShowLoadingModal(false)
-
+    setShowLoadingModal(false);
   };
+
+
   
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -286,7 +300,7 @@ const TrainersManagement = () => {
           />
         </Col>
         </Row>
-      <h2  className="text-info">Online Trainers</h2>
+      <h2>Online Trainers</h2>
       <div style={{ maxHeight: '400px', overflowY: 'scroll' }}>
       <Table striped bordered hover>
         <thead>
@@ -296,7 +310,6 @@ const TrainersManagement = () => {
             <th>Name</th>
             <th>Email Address</th>
             <th>Trainees Number</th>
-            <th>Plan Subscription</th>
             <th>Expiration Date</th>
             <th>Membership Status</th>
             <th>Actions</th>
@@ -318,12 +331,7 @@ const TrainersManagement = () => {
               <td>{user.EmailAddress}</td>
               <td>{user.traineesNumber}</td>
 
-              <td>
-                {user.PlanID === '111' ? "Trial Plan" :
-                 user.PlanID === '241' ? "Premium Plan" :
-                 user.PlanID === "211" ? "Elite Plan" :
-                 "No Chosen Plan"}
-              </td>
+            
               <td>{user.PlanID === "" ? "99/99/9999" : getFormattedDate(user.expirationDate)}</td>
               <td>{user.membershipStatus}</td>
               <td>
@@ -391,28 +399,14 @@ const TrainersManagement = () => {
                 onChange={handleEditInputChange}
               >
                 <option value="">Select Plan</option>
-                <option value="111">Trial Plan</option>
-                <option value="211">Elite Plan</option>
-                <option value="241">Premium Plan</option>
+                <option value="">Choose...</option>
+  <option value="111">1 Month Plan</option>
+  <option value="211">3 Months Plan</option>
+  <option value="241">6 Months Plan</option>
               </Form.Control>
             </Form.Group>
 
-            {editUser.PlanID === "211" || editUser.PlanID === "241" ? (
-              <Form.Group controlId="formBasicMonths">
-                <Form.Label>Number of Months *</Form.Label>
-                <Form.Control
-                  as="select"
-                  value={months}
-                  onChange={(e) => setMonths(e.target.value)}
-                >
-                  <option value="">Select Months</option>
-                  <option value="3">3 Months</option>
-                  <option value="6">6 Months</option>
-                  <option value="12">12 Months</option>
-                </Form.Control>
-              </Form.Group>
-            ) : null}
-
+         
             <Form.Group controlId="formFile">
               <Form.Label>Upload Image</Form.Label>
               <Form.Control type="file" onChange={handleImageFileChange} />

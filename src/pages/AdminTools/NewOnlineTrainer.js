@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { getFirestore, setDoc, doc, Timestamp, runTransaction, getDoc,getDocs,query,collection,where } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import from firebase/storage
+import {Timestamp} from "firebase/firestore";
 import { Form, Button, Card, Container, Row, Col, Toast } from "react-bootstrap";
 import { useAuth } from '../context/AuthContext';
 import LoadingModal from '../LoadingModal';
@@ -42,119 +41,7 @@ const AddOnlineTrainer = () => {
     setImageFile(e.target.files[0]); // Set the selected file
   };
 
-  // const handleSubmit = async (e) => {
-  //   setShowLoadingModal(true)
 
-  //   e.preventDefault();
-  
-  //   // Validation checks
-  //   const requiredFields = ['FirstName', 'LastName', 'UserId', 'EmailAddress', 'PhoneNumber', 'PlanID'];
-  //   for (const field of requiredFields) {
-  //     if (!trainerDetails[field]) {
-  //       setToastMessage(`Please fill in the ${field.replace(/([A-Z])/g, ' $1').toLowerCase()} field.`);
-  //       setShowToast(true);
-  //       return;
-  //     }
-  //   }
-
-  //   if (trainerDetails.UserId.length < 6) {
-  //     setToastMessage('Error,User ID must be at least 6 characters long.');
-  //     setShowToast(true);
-  //     return;
-  //   }
-
-  //   try {
-  //     const db = getFirestore();
-  //     const storage = getStorage(); // Initialize the storage instance
-  
-  //     // Check if email or ID already exists
-  //     const userDocRef = doc(db, "Users", trainerDetails.UserId);
-  //     const userDoc = await getDoc(userDocRef);
-  //     if (userDoc.exists()) {
-  //       setToastMessage('Error, User ID is already taken.');
-  //       setShowToast(true);
-  //       return;
-  //     }
-
-  //     const emailQuerySnapshot = await getDocs(query(collection(db, "Users"), where("EmailAddress", "==", trainerDetails.EmailAddress)));
-  //     if (!emailQuerySnapshot.empty) {
-  //       setToastMessage('Error, Email address is already in use.');
-  //       setShowToast(true);
-  //       return;
-  //     }
-  
-  //     // Upload image if selected
-  //     let imageURL = '';
-  //     if (imageFile) {
-  //       const imageRef = ref(storage, `Users/${trainerDetails.UserId}`);
-  //       await uploadBytes(imageRef, imageFile);
-  //       imageURL = await getDownloadURL(imageRef);
-  //     }
-  
-  //     // Adjust expirationDate based on selectedPlan
-  //     let expirationDate = Timestamp.fromDate(new Date(new Date().setDate(new Date().getDate() + 14))); // Default to 2 weeks
-  
-  //     if (trainerDetails.PlanID === '211' || trainerDetails.PlanID === '241') {
-  //       expirationDate = Timestamp.fromDate(new Date(new Date().setMonth(new Date().getMonth() + 1))); // 2 months for Elite or Premium
-  //     } else if (trainerDetails.PlanID === '111') {
-  //       expirationDate = Timestamp.fromDate(new Date(new Date().setDate(new Date().getDate() + 14))); // 2 weeks for Trial
-  //     }
-  
-  //     // Save trainer details to Firestore in 'Users' collection
-  //     await setDoc(userDocRef, { 
-  //       ...trainerDetails, 
-  //       ImageURL: imageURL,
-  //       expirationDate: expirationDate 
-  //     });
-  
-  //     // Increment trainersNumber in the selected plan
-  //     const planDocRef = doc(db, "TrainersPlans", trainerDetails.PlanID); // Assuming Plans collection with documents for each PlanID
-  //     await runTransaction(db, async (transaction) => {
-  //       const planDoc = await transaction.get(planDocRef);
-  //       if (!planDoc.exists()) {
-  //         throw new Error("Plan document does not exist!");
-  //       }
-  
-  //       const updatedTrainersNumber = (planDoc.data().trainersNumber || 0) + 1;
-  //       transaction.update(planDocRef, { trainersNumber: updatedTrainersNumber });
-  //     });
-  
-  //      await signup(trainerDetails.EmailAddress,trainerDetails.UserId)
-  //     // Show success toast
-  //     setToastMessage('New online trainer added successfully!');
-  //     setShowToast(true);
-  
-  //     // Clear form after submission
-  //     setTrainerDetails({
-  //       FirstName: '',
-  //       LastName: '',
-  //       UserId: '',
-  //       FirstLoggin:0,
-  //       EmailAddress: '',
-  //       Participating_from: Timestamp.now(),
-  //       Location: '',
-  //       PhoneNumber: '',
-  //       membershipStatus: 'activated',
-  //       traineesNumber: 0,
-  //       Description: '',
-  //       ImageURL: '',
-  //       expirationDate: Timestamp.fromDate(new Date(new Date().setDate(new Date().getDate() + 14))), // Reset expiration date
-  //       role: 8,
-  //       PlanID: '',
-  //     });
-  //     setImageFile(null); // Clear selected image file
-  //     console.log("Trainer data successfully written to Firestore!");
-  
-  //   } catch (error) {
-  //     console.error("Error writing document or signing up trainer: ", error);
-  
-  //     // Show error toast
-  //     setToastMessage('Error adding new online trainer. Please try again.');
-  //     setShowToast(true);
-  //   }
-  //   setShowLoadingModal(false)
-
-  // };
   const handleSubmit = async (e) => {
     setShowLoadingModal(true);
     e.preventDefault();
@@ -354,9 +241,9 @@ const AddOnlineTrainer = () => {
                     required
                   >
                     <option value="">Choose...</option>
-                    <option value="211">Elite Plan</option>
-                    <option value="241">Premium Plan</option>
-                    <option value="111">Trial Plan</option>
+  <option value="111">1 Month Plan</option>
+  <option value="211">3 Months Plan</option>
+  <option value="241">6 Months Plan</option>
                   </Form.Select>
                 </Form.Group>
               </Col>

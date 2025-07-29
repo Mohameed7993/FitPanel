@@ -13,7 +13,7 @@ import {
   PointElement
 } from "chart.js";
 import useFetchPlans from '../useFetchGymPlans';
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 
 // Register Chart.js components
 ChartJS.register(
@@ -25,6 +25,7 @@ ChartJS.register(
   LinearScale,
   LineElement,
   PointElement
+
 );
 
 const MasterDashboard = () => {
@@ -33,7 +34,6 @@ const MasterDashboard = () => {
   const [expiringUsers, setExpiringUsers] = useState([]);
   const [profitDataByMonth, setProfitDataByMonth] = useState([]);
   const [userData,setUserData]=useState()
-  const db = getFirestore();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -81,7 +81,7 @@ const MasterDashboard = () => {
     };
 
     fetchUserData();
-  }, [db, plans]);
+  }, [ plans]);
 
   // Calculate total profit
   const totalProfit = plans.reduce((total, plan) => total + (plan.trainersNumber || 0) * (plan.Costs || 0), 0);
@@ -144,8 +144,8 @@ const MasterDashboard = () => {
 
   return (
     <Container className="mt-4">
-      <h2 className="text-info">Studio Plans Statistics</h2>
-      <Card className="mt-4">
+      <h2 >Studio Plans Statistics</h2>
+      <Card className="mt-4 bg-success text-white">
         <Card.Body>
           <Card.Title>Total Profit:</Card.Title>
           <Card.Text>
@@ -162,7 +162,7 @@ const MasterDashboard = () => {
         </div>
       </div>
 
-      <h3 className="text-info mt-4">Users with Expiring Accounts</h3>
+      <h3 className=" mt-4">Users with Expiring Accounts</h3>
       <Table striped bordered hover>
         <thead>
           <tr>

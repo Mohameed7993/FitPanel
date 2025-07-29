@@ -1,13 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+// import { useAuth } from './pages/context/AuthContext';
+
 
 const NotFound = () => {
   const navigate = useNavigate();
 
+  // const { logout } = useAuth();
   const handleGoBack = () => {
     navigate(-1); // Go back to the previous page
   };
+  //  logout(); 
 
   return (
     <div className="container text-center my-5">

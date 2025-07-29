@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import logo from '../image/Mo ‘s.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTachometerAlt, faSyringe, faCalculator, faIdBadge,
-    faUser, faRightFromBracket, faPhone, faAddressCard, faShop, faBars } from '@fortawesome/free-solid-svg-icons';
+import { faTachometerAlt, faIdBadge,
+     faRightFromBracket, faBars } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../context/AuthContext';
-import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 import { Offcanvas, Nav } from 'react-bootstrap';
 
 import SubscriberDashboard from './Profile';
-import Calori_Calculate from './CaloriCalculater';
-import SteroidMangment from '../OnlineTrainers/SteroidPlans';
 import SubscriberDetails from '../OnlineTrainers/SubscriberDetails';
-import Shopping from './shopping';
-import About from '../About';
-import Contact from '../Contact';
-import UpdateProfile from '../UpdateProfile';
+
 
 const Customer = () => {
   const [currentView, setCurrentView] = useState('Dashboard');
@@ -24,7 +18,6 @@ const Customer = () => {
   const [trainerDetails, setTrainerDetails] = useState(null);
   const [show, setShow] = useState(false);
 
-  const db = getFirestore();
 
   const handleNavClick = (view) => {
     setCurrentView(view);
@@ -36,41 +29,33 @@ const Customer = () => {
     setShow(false); // Close Offcanvas when a navigation item is clicked
   };
 
-  const fetchDetails = async () => {
-    if (userlogindetails) {
-      // Fetch trainer details
-      if (userlogindetails.trainerID) {
-        const qTrainer = query(collection(db, 'Users'), where('UserId', '==', userlogindetails.trainerID));
-        const querySnapshotTrainer = await getDocs(qTrainer);
-        if (!querySnapshotTrainer.empty) {
-          setTrainerDetails(querySnapshotTrainer.docs[0].data());
-        }
+const fetchDetails = async () => {
+  if (userlogindetails?.trainerID) {
+    try {
+      const response = await fetch(`/MoDumbels/getTrainerDetails?trainerID=${userlogindetails.trainerID}`);
+      if (response.ok) {
+        const data = await response.json();
+        setTrainerDetails(data.trainer);
+      } else {
+        console.error('Failed to fetch trainer details');
       }
+    } catch (error) {
+      console.error('Error fetching trainer details:', error);
     }
-  };
+  }
+};
 
-  useEffect(() => {
-    fetchDetails();
-  }, [userlogindetails]);
+useEffect(() => {
+  fetchDetails();
+}, [userlogindetails]);
 
   const renderView = () => {
     switch (currentView) {
       case 'Dashboard':
         return <SubscriberDashboard Views={handleNavClick} />;
-      case 'CaloriCalculate':
-        return <Calori_Calculate />;
-      case 'SteroidPlans':
-        return <SteroidMangment />;
       case 'SubscriberDetails':
         return <SubscriberDetails customerId={selectedCustomerId} />;
-      case 'Shopping':
-        return <Shopping />;
-      case 'About':
-        return <About />;
-      case 'Contact':
-        return <Contact />;
-      case 'Profile':
-        return <UpdateProfile />;
+    
       default:
         return <div>Welcome to the Customer Dashboard</div>;
     }
@@ -137,28 +122,8 @@ const Customer = () => {
                 <FontAwesomeIcon icon={faTachometerAlt} className="mx-2" />
               </Nav.Link>
             </Nav.Item>
-            <Nav.Item>
-              <Nav.Link
-                href="#"
-                className={getNavItemClass('CaloriCalculate')}
-                onClick={() => handleNavClick('CaloriCalculate')}
-              >
-                מחשבון קלוריות
-                <FontAwesomeIcon icon={faCalculator} className="mx-2" />
-              </Nav.Link>
-            </Nav.Item>
-            {trainerDetails && trainerDetails.PlanID === '241' && (
-              <Nav.Item>
-                <Nav.Link
-                  href="#"
-                  className={getNavItemClass('SteroidPlans')}
-                  onClick={() => handleNavClick('SteroidPlans')}
-                >
-                  תוכניות סטרוידים
-                  <FontAwesomeIcon icon={faSyringe} className="mx-2" />
-                </Nav.Link>
-              </Nav.Item>
-            )}
+           
+             
             <Nav.Item>
               <Nav.Link
                 href="#"
@@ -167,28 +132,6 @@ const Customer = () => {
               >
                 פרטי מתאמן
                 <FontAwesomeIcon icon={faIdBadge} className="mx-2" />
-              </Nav.Link>
-            </Nav.Item>
-            {trainerDetails && trainerDetails.PlanID === '241' && (
-              <Nav.Item>
-                <Nav.Link
-                  href="#"
-                  className={getNavItemClass('Shopping')}
-                  onClick={() => handleNavClick('Shopping')}
-                >
-                  חנות
-                  <FontAwesomeIcon icon={faShop} className="mx-2" />
-                </Nav.Link>
-              </Nav.Item>
-            )}
-            <Nav.Item>
-              <Nav.Link
-                href="#"
-                className={getNavItemClass('Profile')}
-                onClick={() => handleNavClick('Profile')}
-              >
-                פרופיל
-                <FontAwesomeIcon icon={faUser} className="mx-2" />
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
@@ -201,26 +144,7 @@ const Customer = () => {
                 <FontAwesomeIcon icon={faRightFromBracket} className="mx-2" />
               </Nav.Link>
             </Nav.Item>
-            <Nav.Item>
-              <Nav.Link
-                href="#"
-                className={getNavItemClass('About')}
-                onClick={() => handleNavClick('About')}
-              >
-                מי אנחנו
-                <FontAwesomeIcon icon={faAddressCard} className="mx-2" />
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link
-                href="#"
-                className={getNavItemClass('Contact')}
-                onClick={() => handleNavClick('Contact')}
-              >
-                צור קשר
-                <FontAwesomeIcon icon={faPhone} className="mx-2" />
-              </Nav.Link>
-            </Nav.Item>
+           
           </Nav>
         </Offcanvas.Body>
       </Offcanvas>

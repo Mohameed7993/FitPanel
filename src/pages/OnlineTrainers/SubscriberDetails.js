@@ -2,12 +2,9 @@ import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Ensure Bootstrap CSS is imported
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLevelUpAlt,faTrash, faImage,faLevelDownAlt } from '@fortawesome/free-solid-svg-icons'; // Import the icons
-import { Toast, ToastContainer, Button, Form ,Modal, Table,Pagination } from 'react-bootstrap';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getFirestore ,updateDoc,setDoc,doc,getDoc, Timestamp} from 'firebase/firestore';
+import { Toast, ToastContainer, Button, Form ,Modal, Table } from 'react-bootstrap';
+import { getFirestore , Timestamp} from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
-import { PDFDocument, rgb } from 'pdf-lib';
-import logo from '../image/newlogo.png';
 import MeasurementsModal from '../MeasurementsModal';
 
 
@@ -23,19 +20,17 @@ const SubscriberDetails = ({ customerId }) => {
   const [measurements, setMeasurements] = useState([]);
 
   const db = getFirestore();
-  
   useEffect(() => {
     const fetchMeasurements = async () => {
       try {
         if (customerId?.id) {
-          const customerDocRef = doc(db, 'customers', customerId.id);
-          const docSnapshot = await getDoc(customerDocRef);
+          const response = await fetch(`/MoDumbels/measurements/${customerId.id}`);
+          const result = await response.json();
   
-          if (docSnapshot.exists()) {
-            const data = docSnapshot.data();
-            setMeasurements(data.weeks || []);
+          if (response.ok) {
+            setMeasurements(result.measurements || []);
           } else {
-            console.log('No such document!');
+            console.error('Failed to fetch measurements:', result.message);
           }
         }
       } catch (error) {
@@ -44,22 +39,41 @@ const SubscriberDetails = ({ customerId }) => {
     };
   
     fetchMeasurements();
-  }, [customerId?.id, db]);
+  }, [customerId?.id]);
+  
   
   const getFormattedDate = (timestamp) => {
-    if (!timestamp || isNaN(timestamp)) {
+    try {
+      // Case 1: Firestore Timestamp with .toDate()
+      if (timestamp?.toDate) {
+        const date = timestamp.toDate();
+        return formatDate(date);
+      }
+  
+      // Case 2: Firestore timestamp-like object from backend
+      if (typeof timestamp?.seconds === 'number') {
+        const date = new Date(timestamp.seconds * 1000);
+        return formatDate(date);
+      }
+  
+      // Case 3: ISO string or regular timestamp
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) throw new Error('Invalid date');
+      return formatDate(date);
+    } catch (error) {
+      console.error('Invalid timestamp:', timestamp);
       return "Invalid Date";
     }
-
-    const date = new Date(timestamp.toDate());
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
+  };
+  
+  const formatDate = (date) => {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
-  const storage = getStorage(); // Initialize the storage instance
+  
  
-
 
   const [newMeasurements, setNewMeasurements] = useState({
     back: '',
@@ -98,33 +112,32 @@ const SubscriberDetails = ({ customerId }) => {
     setNewImages([...e.target.files]);
   };
   const handleAddMeasurements = async () => {
-    if (!userlogindetails) return;
-  
-    const customerRef = doc(db, 'customers', userlogindetails.id);
-    try {
-      const customerDoc = await getDoc(customerRef);
-      if (customerDoc.exists()) {
-        const customerData = customerDoc.data();
-        const imageUrls = await Promise.all(newImages.map(async (imageFile) => {
-          const storageRef = ref(storage, `customers/${userlogindetails.id}/images/${imageFile.name}`);
-          await uploadBytes(storageRef, imageFile);
-          return getDownloadURL(storageRef);
-        }));
-  
-        const updatedWeek = { ...newMeasurements, images: imageUrls };
-        const updatedWeeks = customerData.weeks ? [...customerData.weeks, updatedWeek] : [updatedWeek];
-  
-        await updateDoc(customerRef, { weeks: updatedWeeks });
-        setMeasurements(updatedWeeks); // Update local state to reflect changes
-  
-        setShowMeasurementsModal(false);
-      }
-    } catch (error) {
-      console.error('Error adding measurements:', error);
-      // Optionally, show an error toast here
+  if (!userlogindetails) return;
+
+  const formData = new FormData();
+  formData.append('customerId', customerId.id);
+  formData.append('newMeasurements', JSON.stringify(newMeasurements));
+  newImages.forEach((file) => {
+    formData.append('images', file);
+  });
+
+  try {
+    const response = await fetch('/MoDumbels/addMeasurement', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload measurement');
     }
-  };
-  
+
+    const data = await response.json();
+    setMeasurements(data.weeks);
+    setShowMeasurementsModal(false);
+  } catch (error) {
+    console.error('Error adding measurements via backend:', error);
+  }
+};
 
   const handleOpenMeasurementsModal = () => setShowMeasurementsModal(true);
 
@@ -168,131 +181,65 @@ const handleButton = () => {
   const [trainingPlanFile, setTrainingPlanFile] = useState(null);
   const [foodPlanFile, setFoodPlanFile] = useState(null);
 
-  // Function to handle file upload
-  const handleFileUpload =  (e) => {
-    const {name,files}=e.target;
-    const file = e.target.files[0];
-    if (!file) return;
-    name==='trainingPlan'? setTrainingPlanFile(files[0]): setFoodPlanFile(files[0]);
+
+
+  const handleFileUpload = (e) => {
+    const { name, files } = e.target;
+    if (!files || files.length === 0) return;
+  
+    if (name === 'trainingPlan') setTrainingPlanFile(files[0]);
+    if (name === 'foodPlan') setFoodPlanFile(files[0]);
   };
-
-  const modifyPdf = async (file) => {
-    const reader = new FileReader();
-    return new Promise((resolve, reject) => {
-      reader.onload = async () => {
-        try {
-          const pdfDoc = await PDFDocument.load(reader.result);
-          const pages = pdfDoc.getPages();
-          const footerText = 'All rights reserved for © Mo-Dumbels 2024';
-          const userNameText = `${userlogindetails.FirstName} ${userlogindetails.LastName}`;
-          const uploadDate = getFormattedDate(Timestamp.now());
-
-          // Load the icon image from URL
-          const iconBytes = await fetch(logo).then(res => res.arrayBuffer());
-          const iconImage = await pdfDoc.embedPng(iconBytes);
-
-          pages.forEach(page => {
-            const { width, height } = page.getSize();
-
-            // Add icon
-            page.drawImage(iconImage, {
-              x: 30,
-              y: height - 150,
-              width: 120,
-              height: 120,
-            });
-
-            // Add upload date
-            page.drawText(uploadDate, {
-              x: width - 150,
-              y: height - 90,
-              size: 12,
-              color: rgb(0, 0, 0),
-            });
-
-
-            // Add user name at the bottom left
-            page.drawText(userNameText, {
-              x: 50,
-              y: 50,
-              size: 12,
-              color: rgb(0, 0, 0),
-            });
-
-            // Add footer text
-            page.drawText(footerText, {
-              x: 50,
-              y: 30,
-              size: 12,
-              color: rgb(0, 0, 0),
-            });
-          });
-
-          const modifiedPdfBytes = await pdfDoc.save();
-          resolve(new Blob([modifiedPdfBytes], { type: 'application/pdf' }));
-        } catch (error) {
-          reject(error);
-        }
-      };
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(file);
-    });
-  };
-
+  
   const handelsaveFiles = async (e) => {
     e.preventDefault();
-
-    let trainingPlanURL = '';
-    let foodPlanURL = '';
-
-    if (trainingPlanFile) {
-      try {
-        const modifiedTrainingPlanBlob = await modifyPdf(trainingPlanFile);
-        const trainingPlanRef = ref(storage, `TrainingPlans/${customerId.id}`);
-        await uploadBytes(trainingPlanRef, modifiedTrainingPlanBlob);
-        trainingPlanURL = await getDownloadURL(trainingPlanRef);
-      } catch (error) {
-        console.error('Error modifying and uploading training plan file:', error);
-      }
-    }
-
-    if (foodPlanFile) {
-      try {
-        const modifiedFoodPlanBlob = await modifyPdf(foodPlanFile);
-        const foodPlanRef = ref(storage, `FoodPlans/${customerId.id}`);
-        await uploadBytes(foodPlanRef, modifiedFoodPlanBlob);
-        foodPlanURL = await getDownloadURL(foodPlanRef);
-      } catch (error) {
-        console.error('Error modifying and uploading food plan file:', error);
-      }
-    }
-
+  
+    const formData = new FormData();
+    formData.append('customerId', customerId.id);
+    formData.append('firstName', userlogindetails.FirstName);
+    formData.append('lastName', userlogindetails.LastName);
+  
+    if (trainingPlanFile) formData.append('trainingPlan', trainingPlanFile);
+    if (foodPlanFile) formData.append('foodPlan', foodPlanFile);
+  
     try {
-      await setDoc(doc(db, 'customers', customerId.id), {
-        ...customerId,
-        trainingPlanURL,
-        foodPlanURL,
+      const response = await fetch('/MoDumbels/uploadPlans', {
+        method: 'POST',
+        body: formData
       });
+  
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+  
+      const data = await response.json();
       setShowToastfiles(true);
     } catch (error) {
-      console.error('Error updating Firestore:', error);
+      console.error('Error uploading plans:', error);
     }
   };
 
    // Function to handle the deletion of a measurement
    const handleDeleteMeasurement = async (index) => {
-    const updatedMeasurements = measurements.filter((_, i) => i !== index);
-
     try {
-      await updateDoc(doc(db, 'customers', customerId.id), {
-        weeks: updatedMeasurements,
+      const response = await fetch('/MoDumbels/deleteMeasurement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId: customerId.id,
+          index,
+        }),
       });
-
-      // Update local state to refresh the table
-      setMeasurements(updatedMeasurements);
-      alert("Deleted successfully!");
+  
+      if (response.ok) {
+        const data = await response.json();
+        setMeasurements(data.weeks);
+        alert('Deleted successfully!');
+      } else {
+        console.error('Failed to delete measurement');
+      }
     } catch (error) {
-      console.error("Error deleting measurement: ", error);
+      console.error('Error deleting measurement:', error);
     }
   };
 
@@ -302,16 +249,26 @@ const handleButton = () => {
     setShowModal(true);
   };
 
-  // Function to download file
-  const handleDownload = (fileURL) => {
+  const handleDownload = (fileURL, customerName, docType) => {
+    console.log('File URL:', fileURL);
+    //print the customer name and docType
+    console.log('Customer Name:', customerName);
+    console.log('Document Type:', docType);
     if (!fileURL) {
       setShowToast(true);
       return;
     }
-
+  
+    // Sanitize the customer name (remove special chars if needed)
+    const safeName = customerName.replace(/\s+/g, '_').replace(/[^\w\-]/g, '');
+    const fileName = `${safeName}_${docType}_Plan.pdf`;
+  
     const link = document.createElement('a');
     link.href = fileURL;
-    link.download = fileURL.split('/').pop();
+    link.setAttribute('download', fileName);
+    link.setAttribute('target', '_blank');
+    link.setAttribute('rel', 'noopener noreferrer');
+  
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -388,8 +345,11 @@ const handleButton = () => {
                   </Button>
                 )} 
                 {metric.key !== 'delete' && metric.key !== 'images' && (
-                week[metric.key] || '-'
-                )}
+  metric.key === 'updatedAt'
+    ? getFormattedDate(week[metric.key])
+    : week[metric.key] || '-'
+)}
+
               </td>
             ))}
             <td>{metric.name}</td>
@@ -414,14 +374,14 @@ const handleButton = () => {
               <h5>הורד את תכניות האימון והאוכל:</h5>
               <Button
                 className="btn btn-primary mb-2 mx-2"
-                onClick={() => handleDownload(customerId?.trainingPlanURL)}
+                onClick={() => handleDownload(customerId?.trainingPlanURL,customerId.name, 'Training')}
                 size='sm'
               >
                 הורד תכנית אימון
               </Button>
               <Button
                 className="btn btn-primary mb-2 mx-2"
-                onClick={() => handleDownload(customerId?.foodPlanURL)}
+                onClick={() => handleDownload(customerId?.foodPlanURL,customerId.name, 'Food')}
                 size='sm'
               >
                 הורד תכנית אוכל

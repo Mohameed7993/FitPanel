@@ -2,20 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Card, Container, Button, Row, Col } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { getFirestore, collection, updateDoc, query, getDoc, doc, where, getDocs } from 'firebase/firestore';
 import { Timestamp } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import ProductSlider from '../../slider';
+
 import LoadingModal from '../LoadingModal';
-import { PDFDocument, rgb } from 'pdf-lib';
+
 
 const SubscriberDashboard = ({ Views }) => {
   const { currentUser, userlogindetails } = useAuth();
   const [trainerDetails, setTrainerDetails] = useState(null);
-  const [steroidPlanDetails, setSteroidPlanDetails] = useState(null);
-  const [productDetails, setProductDetails] = useState([]);
   const [loading, setLoading] = useState(true);
-  const db = getFirestore();
+
   const navigate = useNavigate();
   const [showLoadingModal, setShowLoadingModal] = useState(false);
 
@@ -51,55 +47,34 @@ const SubscriberDashboard = ({ Views }) => {
     }
   }, [currentUser, navigate]);
 
-  const fetchDetails = async () => {
-    setLoading(true);
-    setShowLoadingModal(true);
-    if (userlogindetails) {
-      // Fetch trainer details
-      if (userlogindetails.trainerID) {
-        const qTrainer = query(collection(db, 'Users'), where('UserId', '==', userlogindetails.trainerID));
-        const querySnapshotTrainer = await getDocs(qTrainer);
-        if (!querySnapshotTrainer.empty) {
-          setTrainerDetails(querySnapshotTrainer.docs[0].data());
-        }
-      }
+const fetchDetails = async () => {
+  if (!userlogindetails?.trainerID) return;
 
-      // Fetch steroid plan details
-      if (userlogindetails.SteroidPlanID) {
-        const steroidPlanID = parseInt(userlogindetails.SteroidPlanID, 10);
-        const qSteroidPlan = query(collection(db, 'SteroidPlan'), where('PlanID', '==', steroidPlanID));
-        const querySnapshotSteroidPlan = await getDocs(qSteroidPlan);
-        if (!querySnapshotSteroidPlan.empty) {
-          setSteroidPlanDetails(querySnapshotSteroidPlan.docs[0].data());
-        }
-      }
+  setLoading(true);
+  setShowLoadingModal(true);
 
-      // Fetch product details
-      if (userlogindetails.trainerID) {
-        const qProducts = query(
-          collection(db, 'products'),
-          where('TrainerID', '==', userlogindetails.trainerID)
-        );
-        const querySnapshotProducts = await getDocs(qProducts);
-        const products = querySnapshotProducts.docs.map(doc => doc.data());
-        setProductDetails(products);
-      }
+  try {
+    const response = await fetch(`/MoDumbels/getTrainerDetails?trainerID=${userlogindetails.trainerID}`);
+    if (response.ok) {
+      const data = await response.json();
+      setTrainerDetails(data.trainer);
+    } else {
+      console.error('Failed to fetch trainer details');
     }
+  } catch (error) {
+    console.error('Error fetching trainer details:', error);
+  } finally {
     setLoading(false);
     setShowLoadingModal(false);
-  };
+  }
+};
 
   useEffect(() => {
     fetchDetails();
   }, [userlogindetails]);
 
-  const handleViewPlans = () => {
-    Views('SteroidPlans');
-  };
 
-  const handleViewShop = () => {
-    Views('Shopping');
-  };
+
 
   const handleViewMeasurement = () => {
     Views('SubscriberDetails');
@@ -126,7 +101,7 @@ const SubscriberDashboard = ({ Views }) => {
         {/* Trainer Details */}
         <Col md={4}>
           {trainerDetails && (
-            <Card className='m-3' style={{ color: 'var(--text-color)' }}>
+            <Card  className='m-3' style={{color: 'white' , backgroundColor: 'var(--text-color)'}}>
               <Card.Body className='text-center'>
                 <h5 className="mb-2 pb-1" style={{ borderBottom: '2px solid var(--text-color)' }}>פרטי המאמן</h5>
                 <img
@@ -135,7 +110,7 @@ const SubscriberDashboard = ({ Views }) => {
                   alt="Trainer avatar"
                   style={{ width: '100px', height: '100px', borderRadius: '50%' }}
                 />
-                <h4 className="card-title">{trainerDetails.FirstName + " " + trainerDetails.LastName}</h4>
+                <h4 className="card-title"  style={{color: 'white' }}>{trainerDetails.FirstName + " " + trainerDetails.LastName}</h4>
                 <p>
                   {trainerDetails.Description ? trainerDetails.Description.split('.').map((sentence, i) => (
                     <div key={i}>{sentence.trim() ? sentence.trim() + '.' : ''}</div>
@@ -148,7 +123,7 @@ const SubscriberDashboard = ({ Views }) => {
 
         {/* Account Details */}
         <Col md={4}>
-          <Card className='m-3' style={{ color: 'var(--text-color)' }}>
+          <Card className='m-3'style={{color: 'white' , backgroundColor: 'var(--text-color)'}}>
             <Card.Body className='text-center'>
               <h5 className="mb-2 pb-1" style={{ borderBottom: '2px solid var(--text-color)'}}>פרטי חשבון</h5>
               <p>בתוקף עד: {getFormattedDate(userlogindetails.expirationDate)}</p>
@@ -162,59 +137,34 @@ const SubscriberDashboard = ({ Views }) => {
 
      {/* Download Plans Card */}
      <Col md={4}>
-          <Card className='m-3' style={{ color: 'var(--text-color)' }}>
+          <Card className='m-3' style={{color: 'white' , backgroundColor: 'var(--text-color)'}}>
             <Card.Body className='text-center'>
               <h5 className="mb-2 pb-1" style={{ borderBottom: '2px solid var(--text-color)'}}>Download Plans</h5>
+               <p>תוכנית אימון: {userlogindetails.trainingPlanLastUpdated ? getFormattedDate(userlogindetails.trainingPlanLastUpdated) : 'לא עודכן'}</p>
+              <p>תוכנית אוכל: {userlogindetails.foodPlanLastUpdated ? getFormattedDate(userlogindetails.foodPlanLastUpdated) : 'לא עודכן'}</p>
+  
               <Button
                 onClick={() => handleDownload(userlogindetails.trainingPlanURL)}
                 disabled={!userlogindetails.trainingPlanURL}
                 className="m-2"
               >
-                Download Training Plan
+                הורדת תוכנית אימון
               </Button>
               <Button
-                onClick={() => handleDownload("https://firebasestorage.googleapis.com/v0/b/booming-voice-396809.appspot.com/o/FoodPlans%2F315257881?alt=media&token=d8f1fb66-b0c9-4608-b819-86e8ce58bb4c")}
+                onClick={() => handleDownload(userlogindetails.foodPlanURL)}
                 disabled={!userlogindetails.foodPlanURL}
                 className="m-2"
               >
-                Download Food Plan
+                הורדת תוכנית אוכל
               </Button>
             </Card.Body>
           </Card>
         </Col>
 
-        {/* Steroid Plan Details */}
-        {trainerDetails&&trainerDetails.PlanID==='241'&&(
-        <Col md={4}>
-          { userlogindetails.SteroidPlanID ? (
-            steroidPlanDetails ? (
-              <Card className='m-3 ' style={{ color: 'var(--text-color)' }}>
-                <Card.Body className='text-center'>
-                  <h5 className="mb-2 pb-1" style={{ borderBottom: '2px solid var(--text-color)' }}>תוכנית סטרויד</h5>
-                  <p>{steroidPlanDetails.PlanName}: שם תוכנית </p>
-                  <p>בתוקף עד: {getFormattedDate(userlogindetails.expirationDateSteroidPlan)}</p>
-                  <p>:על התוכנית {steroidPlanDetails.PlanDetails.split('.').map((sentence, i) => (
-                    <div key={i}>{sentence.trim() ? sentence.trim() + '.' : ''}</div>))}</p>
-                  <p>{steroidPlanDetails.Duration} :  משך בחודשים </p>
-                  <p>מחיר: ₪{steroidPlanDetails.PlanCost}</p>
-                </Card.Body>
-              </Card>
-            ) : <p>Loading steroid plan details...</p>
-          ) : (
-            <Card className='m-3' style={{ color: 'var(--text-color)' }}>
-              <Card.Body className='text-center'>
-                <h5 className="mb-2 pb-1" style={{ borderBottom: '2px solid var(--text-color)' }}>Choose Your Steroid Plan</h5>
-                <Button variant="primary" onClick={handleViewPlans}>Choose Your Steroid Plan</Button>
-              </Card.Body>
-            </Card>
-          )}
-    
-        </Col>
-        )}
 
         {/* Weeks Details */}
         <Col md={4}>
-          <Card className='m-3' style={{ color: 'var(--text-color)' }}>
+          <Card className='m-3' style={{color: 'white' , backgroundColor: 'var(--text-color)'}}>
             <Card.Body className='text-center'>
               <h5 className="mb-2 pb-1" style={{ borderBottom: '2px solid var(--text-color)' }}>מידידות שבועיות</h5>
                <Button onClick={handleViewMeasurement}>
@@ -224,24 +174,6 @@ const SubscriberDashboard = ({ Views }) => {
           </Card>
         </Col>
 
-        {/* Shop Details Card */}
-        {trainerDetails.PlanID==='241'&&(
-        <Col md={4}>
-          <Card className='m-3 text-center' style={{ color: 'var(--text-color)' }}>
-            <Card.Body className='text-center'>
-              <h5 className="mb-2 pb-1" style={{ borderBottom: '2px solid var(--text-color)' }}>Shop Details</h5>
-              {productDetails.length > 0 ? (
-                <ProductSlider products={productDetails} />
-              ) : (
-                <p>No products available</p>
-              )}
-              <Button className='mt-4' onClick={handleViewShop}>Go to Shop</Button>
-            </Card.Body>
-          </Card>
-        </Col>
-        )}
-    
-   
       </Row>
     </Container>
   );

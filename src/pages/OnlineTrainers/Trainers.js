@@ -1,22 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import logo from '../image/Mo ‘s.png';
+import logo from '../image/fitpanel1.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserPlus, faUsers, faStar, faUser, faIdBadge, faShop, faSyringe, faRightFromBracket, faPhone, faAddressCard, faBars } from '@fortawesome/free-solid-svg-icons';
+import { faUserPlus, faUsers,faIdBadge, faRightFromBracket, faBars } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../context/AuthContext';
 import { Modal, Button, Form, Toast, Offcanvas } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { doc, updateDoc, getFirestore } from 'firebase/firestore';
-import { Navigate } from 'react-router-dom';
+
 
 import AddNewSubscriber from './NewSubscriber';
 import SubscriberMang from './SubscriberMangment';
 import SubscriberDetails from './SubscriberDetails';
-import Shop from './shop';
-import SteroidPlans from './SteroidPlans';
-import SteroidMangment from './SubscriberSteroidMangment';
-import About from '../About';
-import Contact from '../Contact';
-import UpdateProfile from '../UpdateProfile';
+
 
 const Trainer = () => {
   const [currentView, setCurrentView] = useState('SubscriberMang');
@@ -30,7 +24,8 @@ const Trainer = () => {
   const [showSidebar, setShowSidebar] = useState(false); // For controlling sidebar visibility
 
   useEffect(() => {
-    if (currentUser) {
+    console.log(currentUser , userlogindetails.FirstLoggin); 
+    if (currentUser ) {
       if (userlogindetails.FirstLoggin === 0) {
         setShowChangePasswordModal(true);
       }
@@ -59,18 +54,18 @@ const Trainer = () => {
         return <SubscriberMang onSelectCustomer={handleNavClick} />;
       case 'SubscriberDetails':
         return <SubscriberDetails customerId={selectedCustomerId} />;
-      case 'Shop':
-        return <Shop />;
-      case 'SteroidPlans':
-        return <SteroidPlans />;
-      case 'SteroidMangment':
-        return <SteroidMangment />;
-      case 'About':
-        return <About />;
-      case 'Contact':
-        return <Contact />;
-      case 'Profile':
-        return <UpdateProfile />;
+      // case 'Shop':
+      //   return <Shop />;
+      // case 'SteroidPlans':
+      //   return <SteroidPlans />;
+      // case 'SteroidMangment':
+      //   return <SteroidMangment />;
+      // case 'About':
+      //   return <About />;
+      // case 'Contact':
+      //   return <Contact />;
+      // case 'Profile':
+      //   return <UpdateProfile />;
       default:
         return <div>Welcome to the Trainer Dashboard</div>;
     }
@@ -93,18 +88,31 @@ const Trainer = () => {
     }
   };
 
+
+
   const handleChangePassword = async (newPassword) => {
-    const db = getFirestore();
     try {
-      console.log(newPassword);
-      await updateProfilePassword(newPassword);
-      // Update the FirstLoggin field to 1 after successful password change
-      const userRef = doc(db, 'Users', userlogindetails.UserId);
-      await updateDoc(userRef, { FirstLoggin: 1 });
-      setShowChangePasswordModal(false);
+      const response = await fetch('/MoDumbels/changePassword', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userlogindetails.EmailAddress,
+          newPassword,
+          Userid:userlogindetails.UserId,
+        }),
+      });
+
+  
+      if (response.ok) {
+        setShowChangePasswordModal(false);
+      } else {
+        const data = await response.json();
+        console.error('Failed to change password:', data.message);
+        setError(data.message || 'Failed to update password. Please try again.');
+      }
     } catch (error) {
-      console.error("Error updating password: ", error);
-      setError("Failed to update password. Please try again.");
+      console.error('Error changing password:', error);
+      setError('Failed to update password. Please try again.');
     }
   };
 
@@ -178,7 +186,7 @@ const Trainer = () => {
                 <FontAwesomeIcon icon={faIdBadge} className="mx-2" />
               </a>
             </li>
-            {userlogindetails && userlogindetails.PlanID === '241' && (
+            {/* {userlogindetails && userlogindetails.PlanID === '241' && (
               <>
                 <li className="nav-item">
                   <a
@@ -208,18 +216,9 @@ const Trainer = () => {
                   </a>
                 </li>
               </>
-            )}
+            )} */}
             
-            <li className="nav-item">
-              <a
-                href="#"
-                className={getNavItemClass('Profile')}
-                onClick={() => handleNavClick('Profile')}
-              >
-                פרופיל
-                <FontAwesomeIcon icon={faUser} className="mx-2" />
-              </a>
-            </li>
+            
             <li className="nav-item">
               <a
                 href="#"
@@ -230,26 +229,7 @@ const Trainer = () => {
                 <FontAwesomeIcon icon={faRightFromBracket} className="mx-2" />
               </a>
             </li>
-            <li className="nav-item">
-              <a
-                href="#"
-                className={getNavItemClass('About')}
-                onClick={() => handleNavClick('About')}
-              >
-                אודות
-                <FontAwesomeIcon icon={faAddressCard} className="mx-2" />
-              </a>
-            </li>
-            <li className="nav-item">
-              <a
-                href="#"
-                className={getNavItemClass('Contact')}
-                onClick={() => handleNavClick('Contact')}
-              >
-                יצירת קשר
-                <FontAwesomeIcon icon={faPhone} className="mx-2" />
-              </a>
-            </li>
+          
           </ul>
         </Offcanvas.Body>
       </Offcanvas>
