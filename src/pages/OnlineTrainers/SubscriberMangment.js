@@ -7,6 +7,7 @@ import MeasurementsModal from "../MeasurementsModal";
 import Pagination from 'react-bootstrap/Pagination';
 
 const SubscriberMang = ({ onSelectCustomer }) => {
+  const SERVERSIDEURL="https://fitpanelserverside.onrender.com"
   const { userlogindetails } = useAuth();
   const [customers, setCustomers] = useState([]);
   const [filteredCustomers, setFilteredCustomers] = useState([]);
@@ -38,7 +39,7 @@ const SubscriberMang = ({ onSelectCustomer }) => {
   const fetchCustomers = async () => {
     if (!userlogindetails) return;
     try {
-      const url = `/MoDumbels/customers?trainerID=${encodeURIComponent(userlogindetails.UserId)}`;
+      const url = `${SERVERSIDEURL}/MoDumbels/customers?trainerID=${encodeURIComponent(userlogindetails.UserId)}`;
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
@@ -64,7 +65,7 @@ const SubscriberMang = ({ onSelectCustomer }) => {
   const handleDelete = async (customer) => {
     setShowLoadingModal(true);
     try {
-      const res = await fetch(`/MoDumbels/deleteCustomer`, {
+      const res = await fetch(`${SERVERSIDEURL}/MoDumbels/deleteCustomer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -95,7 +96,7 @@ const SubscriberMang = ({ onSelectCustomer }) => {
   const handleEdit = async () => {
     if (!selectedCustomer) return;
     try {
-      const res = await fetch(`/MoDumbels/updateCustomer`, {
+      const res = await fetch(`${SERVERSIDEURL}/MoDumbels/updateCustomer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -117,7 +118,7 @@ const SubscriberMang = ({ onSelectCustomer }) => {
   const handleSuspendToggle = async (customerId, currentStatus) => {
     const newStatus = currentStatus === 'activated' ? 'suspended' : 'activated';
     try {
-      const res = await fetch(`/MoDumbels/toggleStatus`, {
+      const res = await fetch(`${SERVERSIDEURL}/MoDumbels/toggleStatus`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ customerID: customerId, status: newStatus })
@@ -136,7 +137,7 @@ const SubscriberMang = ({ onSelectCustomer }) => {
     formData.append('customerID', selectedCustomer.id);
     formData.append('measurements', JSON.stringify(newMeasurements));
     try {
-      const res = await fetch('/MoDumbels/addMeasurements', {
+      const res = await fetch(`${SERVERSIDEURL}/MoDumbels/addMeasurements`, {
         method: 'POST',
         body: formData
       });

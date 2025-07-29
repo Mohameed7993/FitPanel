@@ -9,6 +9,7 @@ import LoadingModal from '../LoadingModal';
 
 
 const TrainersManagement = () => {
+  const SERVERSIDEURL="https://fitpanelserverside.onrender.com"
   const [users, setUsers] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState(''); // New state for search query
@@ -35,7 +36,7 @@ const TrainersManagement = () => {
   const fetchUsers = async () => {
     try {
 
-      const response = await fetch('/MoDumbels/Users');
+      const response = await fetch(`${SERVERSIDEURL}/MoDumbels/Users`);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -110,7 +111,7 @@ const TrainersManagement = () => {
 
   const updatePlanCount = async (oldPlanID, newPlanID) => {
     try {
-      const response = await fetch('/MoDumbels/UpdateCounterAtTrainersPlan', {
+      const response = await fetch(`${SERVERSIDEURL}/MoDumbels/UpdateCounterAtTrainersPlan`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +167,7 @@ const TrainersManagement = () => {
       }
   
       // Send the update request
-      const response = await fetch('/MoDumbels/UpdateTrainerDetails', {
+      const response = await fetch(`${SERVERSIDEURL}/MoDumbels/UpdateTrainerDetails`, {
         method: 'PUT',
         body: formData,
       });
@@ -192,7 +193,7 @@ const TrainersManagement = () => {
     const newStatus = currentStatus === 'activated' ? 'suspended' : 'activated';
     try {
       // Make a PUT request to the server to update membership status
-      const response = await fetch('/MoDumbels/UpdateTrainerStatus', {
+      const response = await fetch(`${SERVERSIDEURL}/MoDumbels/UpdateTrainerStatus`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -238,7 +239,7 @@ const TrainersManagement = () => {
   const handleDeleteUser = async (user) => {
     setShowLoadingModal(true);
     try {
-      const res = await fetch(`/MoDumbels/deleteTrainer`, {
+      const res = await fetch(`${SERVERSIDEURL}/MoDumbels/deleteTrainer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

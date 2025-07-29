@@ -6,6 +6,7 @@ import LoadingModal from '../LoadingModal';
 
 
 const AddOnlineTrainer = () => {
+  const SERVERSIDEURL="https://fitpanelserverside.onrender.com"
   const { signup } = useAuth();
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -85,7 +86,8 @@ const AddOnlineTrainer = () => {
         formData.append('imageFile', imageFile);
       }
   
-      const response = await fetch('/MoDumbels/validateAndAddTrainer', {
+
+      const response = await fetch(`${SERVERSIDEURL}/MoDumbels/validateAndAddTrainer`, {
         method: 'POST',
         body: formData,
       });

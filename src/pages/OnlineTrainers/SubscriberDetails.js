@@ -10,6 +10,7 @@ import MeasurementsModal from '../MeasurementsModal';
 
 
 const SubscriberDetails = ({ customerId }) => {
+  const SERVERSIDEURL="https://fitpanelserverside.onrender.com"
   const {userlogindetails}=useAuth()
   const [showToast, setShowToast] = useState(false);
   const [ShowToastfiles, setShowToastfiles] = useState(false);
@@ -24,7 +25,7 @@ const SubscriberDetails = ({ customerId }) => {
     const fetchMeasurements = async () => {
       try {
         if (customerId?.id) {
-          const response = await fetch(`/MoDumbels/measurements/${customerId.id}`);
+          const response = await fetch(`${SERVERSIDEURL}/MoDumbels/measurements/${customerId.id}`);
           const result = await response.json();
   
           if (response.ok) {
@@ -122,7 +123,7 @@ const SubscriberDetails = ({ customerId }) => {
   });
 
   try {
-    const response = await fetch('/MoDumbels/addMeasurement', {
+    const response = await fetch(`${SERVERSIDEURL}/MoDumbels/addMeasurement`, {
       method: 'POST',
       body: formData,
     });
@@ -203,7 +204,7 @@ const handleButton = () => {
     if (foodPlanFile) formData.append('foodPlan', foodPlanFile);
   
     try {
-      const response = await fetch('/MoDumbels/uploadPlans', {
+      const response = await fetch(`${SERVERSIDEURL}/MoDumbels/uploadPlans`, {
         method: 'POST',
         body: formData
       });
@@ -222,7 +223,7 @@ const handleButton = () => {
    // Function to handle the deletion of a measurement
    const handleDeleteMeasurement = async (index) => {
     try {
-      const response = await fetch('/MoDumbels/deleteMeasurement', {
+      const response = await fetch(`${SERVERSIDEURL}/MoDumbels/deleteMeasurement`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

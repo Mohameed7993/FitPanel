@@ -29,6 +29,7 @@ ChartJS.register(
 );
 
 const MasterDashboard = () => {
+  const SERVERSIDEURL="https://fitpanelserverside.onrender.com"
   const { plans, loading, error } = useFetchPlans();
   const [monthlyRegistrations, setMonthlyRegistrations] = useState([]);
   const [expiringUsers, setExpiringUsers] = useState([]);
@@ -40,7 +41,7 @@ const MasterDashboard = () => {
     
       try {
         // Fetch user data from the server endpoint
-        const response = await fetch('/MoDumbels/Users');
+        const response = await fetch(`${SERVERSIDEURL}/MoDumbels/Users`);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }

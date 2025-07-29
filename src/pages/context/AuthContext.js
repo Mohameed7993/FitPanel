@@ -11,6 +11,7 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
+  const SERVERSIDEURL="https://fitpanelserverside.onrender.com"
   const history = useNavigate();
   const [currentUser, setCurrentUser] = useState(JSON.parse(localStorage.getItem('currentUser')));
   const [userlogindetails, setUserLoginDetails] = useState(JSON.parse(localStorage.getItem('userLoginDetails')));
@@ -33,7 +34,7 @@ export function AuthProvider({ children }) {
       setAuthOperation('login');
   
       // Send login request to the server
-      const response = await fetch('/MoDumbels/login', {
+      const response = await fetch(`${SERVERSIDEURL}/MoDumbels/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -145,7 +146,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem('currentUser', JSON.stringify(user));
 
       try {
-        const res = await fetch('/MoDumbels/getUserDetails', {
+        const res = await fetch(`${SERVERSIDEURL}/MoDumbels/getUserDetails`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: user.email })

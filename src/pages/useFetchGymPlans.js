@@ -4,11 +4,12 @@ const useFetchPlans = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const SERVERSIDEURL="https://fitpanelserverside.onrender.com"
 
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const response = await fetch('/MoDumbels/plans'); // Endpoint to fetch plans from the server
+        const response = await fetch(`${SERVERSIDEURL}/MoDumbels/plans`); // Endpoint to fetch plans from the server
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }

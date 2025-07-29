@@ -6,6 +6,7 @@ import LoadingModal from '../LoadingModal';
 import gymImage from '../image/fitpanel1.png';
 
 const AddNewSubscriber = () => {
+  const SERVERSIDEURL="https://fitpanelserverside.onrender.com"
   const { currentUser, userlogindetails } = useAuth();
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -77,7 +78,7 @@ const AddNewSubscriber = () => {
       if (trainingPlanFile) formData.append('trainingPlanFile', trainingPlanFile);
       if (foodPlanFile) formData.append('foodPlanFile', foodPlanFile);
 
-      const res = await fetch('/MoDumbels/addSubscriber', {
+      const res = await fetch(`${SERVERSIDEURL}/MoDumbels/addSubscriber`, {
         method: 'POST',
         body: formData
       });

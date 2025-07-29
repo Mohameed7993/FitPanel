@@ -32,7 +32,7 @@ const Customer = () => {
 const fetchDetails = async () => {
   if (userlogindetails?.trainerID) {
     try {
-      const response = await fetch(`/MoDumbels/getTrainerDetails?trainerID=${userlogindetails.trainerID}`);
+      const response = await fetch(`${SERVERSIDEURL}/MoDumbels/getTrainerDetails?trainerID=${userlogindetails.trainerID}`);
       if (response.ok) {
         const data = await response.json();
         setTrainerDetails(data.trainer);

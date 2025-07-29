@@ -13,6 +13,7 @@ import SubscriberDetails from './SubscriberDetails';
 
 
 const Trainer = () => {
+  const SERVERSIDEURL="https://fitpanelserverside.onrender.com"
   const [currentView, setCurrentView] = useState('SubscriberMang');
   const { currentUser, userlogindetails, updateProfilePassword, logout } = useAuth();
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
@@ -92,7 +93,7 @@ const Trainer = () => {
 
   const handleChangePassword = async (newPassword) => {
     try {
-      const response = await fetch('/MoDumbels/changePassword', {
+      const response = await fetch(`${SERVERSIDEURL}/MoDumbels/changePassword`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

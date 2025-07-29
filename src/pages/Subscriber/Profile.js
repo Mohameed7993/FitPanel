@@ -8,6 +8,7 @@ import LoadingModal from '../LoadingModal';
 
 
 const SubscriberDashboard = ({ Views }) => {
+  const SERVERSIDEURL="https://fitpanelserverside.onrender.com"
   const { currentUser, userlogindetails } = useAuth();
   const [trainerDetails, setTrainerDetails] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -54,7 +55,7 @@ const fetchDetails = async () => {
   setShowLoadingModal(true);
 
   try {
-    const response = await fetch(`/MoDumbels/getTrainerDetails?trainerID=${userlogindetails.trainerID}`);
+    const response = await fetch(`${SERVERSIDEURL}/MoDumbels/getTrainerDetails?trainerID=${userlogindetails.trainerID}`);
     if (response.ok) {
       const data = await response.json();
       setTrainerDetails(data.trainer);
