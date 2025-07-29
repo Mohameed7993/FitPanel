@@ -11,6 +11,7 @@ import SubscriberDetails from '../OnlineTrainers/SubscriberDetails';
 
 
 const Customer = () => {
+  const SERVERSIDEURL="https://fitpanelserverside.onrender.com"
   const [currentView, setCurrentView] = useState('Dashboard');
   const { userlogindetails, logout } = useAuth();
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
