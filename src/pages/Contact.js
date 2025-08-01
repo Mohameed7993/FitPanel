@@ -17,28 +17,7 @@ const Contacts = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      // Replace this with a real API call to your backend/email service
-      const response = await fetch('/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        setFormStatus('success');
-        setFormData({ name: '', email: '', subject: '', message: '' });
-      } else {
-        setFormStatus('error');
-      }
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      setFormStatus('error');
-    }
-  };
+ 
 
   return (
     <div className="container py-5 " style={{ color: 'var(--text-color)', textAlign: 'center' }}>

@@ -1,17 +1,15 @@
-import React, { useState } from 'react';
+
 import { useAuth } from './context/AuthContext';
 import logoImage from './image/fitpanel.png';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import { Offcanvas } from 'react-bootstrap';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function Layouts() {
   const { currentUser, logout } = useAuth();
-  const [showOffcanvas, setShowOffcanvas] = useState(false);
+  
 
-  const handleOffcanvasToggle = () => {
-    setShowOffcanvas(!showOffcanvas);
-  };
+  
 
   return (
     <>

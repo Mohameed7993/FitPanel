@@ -269,15 +269,15 @@ function Home() {
         <Row className="justify-content-center">
           {[{
             title: "1 Month Subscription",
-            price: "₪500",
+            price: "₪",
             text: "Access all features for 1 month"
           }, {
             title: "3 Months Subscription",
-            price: "₪1300",
+            price: "₪",
             text: "Save more with a 3-month plan"
           }, {
             title: "6 Months Subscription",
-            price: "₪2800",
+            price: "₪",
             text: "Best value for long-term commitment"
           }].map((plan, idx) => (
             <Col key={idx} xs={10} sm={8} md={4} className="mb-4">
